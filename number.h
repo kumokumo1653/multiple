@@ -1,30 +1,44 @@
 #define DIGIT 30
+
 struct NUMBER{
     int n[DIGIT];
     int sign;
 };
-void clearByZero(struct NUMBER *);
-void dispNumber(struct NUMBER *);
-void dispNumberZeroSuppress(struct NUMBER *);
-void setRandom(struct NUMBER *,int);
-void copyNumber(struct NUMBER *, struct NUMBER *);
-void getAbs(struct NUMBER *,struct NUMBER *);
-int isZero(struct NUMBER *);
-int mulBy10(struct NUMBER *,struct NUMBER *);
-int divBy10(struct NUMBER *,struct NUMBER *);
+struct FLOAT{
+    struct NUMBER n;
+    int exp;
+};
+
+void clearByZeroInt(struct NUMBER *);
+void clearByZeroFloat(struct FLOAT *);
+void dispNumberInt(struct NUMBER *);
+void dispNumberFloat(struct FLOAT *);
+void dispNumberZeroSuppressInt(struct NUMBER *);
+void setRandomInt(struct NUMBER *,int);
+void copyNumberInt(struct NUMBER *, struct NUMBER *);
+void copyNumberFloat(struct FLOAT *, struct FLOAT *);
+void getAbsInt(struct NUMBER *,struct NUMBER *);
+void getAbsFloat(struct FLOAT *,struct FLOAT *);
+int isZeroInt(struct NUMBER *);
+int isZeroFloat(struct FLOAT *);
+int mulBy10Int(struct NUMBER *,struct NUMBER *);
+int divBy10Int(struct NUMBER *,struct NUMBER *);
 int setInt(struct NUMBER *,int);
+int setFloat(struct FLOAT *, int, int);
 int getInt(struct NUMBER *,int *);
 int getIntToString(struct NUMBER*,char *);
-int getDigit(struct NUMBER*);
-void swap(struct NUMBER *,struct NUMBER *);
-int setSign(struct NUMBER *,int);
-int getSign(struct NUMBER *);
-int numComp(struct NUMBER *,struct NUMBER *);
-int add(struct  NUMBER *, struct NUMBER *, struct NUMBER *);
-int sub(struct NUMBER * ,struct NUMBER *, struct NUMBER *);
-int increment(struct NUMBER *, struct NUMBER *);
-int multiple(struct NUMBER *, struct NUMBER *, struct NUMBER *);
-int divide(struct NUMBER *, struct NUMBER *,struct NUMBER *, struct NUMBER *);
-int divInt(struct NUMBER *, int, struct NUMBER *,int *);
+int getDigitInt(struct NUMBER*);
+void swapInt(struct NUMBER *,struct NUMBER *);
+int setSignInt(struct NUMBER *,int);
+int getSignInt(struct NUMBER *);
+int numCompInt(struct NUMBER *,struct NUMBER *);
+int numCompFfloat(struct FLOAT *,struct FLOAT *);
+int addInt(struct  NUMBER *, struct NUMBER *, struct NUMBER *);
+int subInt(struct NUMBER * ,struct NUMBER *, struct NUMBER *);
+int incrementInt(struct NUMBER *, struct NUMBER *);
+int decrementInt(struct NUMBER *, struct NUMBER *);
+int multipleInt(struct NUMBER *, struct NUMBER *, struct NUMBER *);
+int divideInt(struct NUMBER *, struct NUMBER *,struct NUMBER *, struct NUMBER *);
+int divIntInt(struct NUMBER *, int, struct NUMBER *,int *);
 int numSqrt(struct NUMBER *,struct NUMBER *);
 int power(struct NUMBER *, int ,struct NUMBER *);
