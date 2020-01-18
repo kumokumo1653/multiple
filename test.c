@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <float.h>
 int main(void){
-    printf("%d\n", 0/10);
+    int n[2] ={1,3};
+    printf("%d\n", n[-1]);
 }

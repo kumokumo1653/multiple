@@ -174,10 +174,10 @@ int isZeroFloat(struct FLOAT *num){
 int mulBy10Int(struct NUMBER *source,struct NUMBER *to){
     int i;
     clearByZeroInt(to);
-    if(source->n[DIGIT - 1] != 0){
-        clearByZeroInt(to);
+    if(isZeroInt(source))
+        return 1;
+    if(source->n[DIGIT - 1] != 0)
         return 0;
-    }
     for(i = 0;i < DIGIT - 1;i++){
         to->n[i + 1] = source->n[i];
     }
@@ -185,11 +185,34 @@ int mulBy10Int(struct NUMBER *source,struct NUMBER *to){
     setSignInt(to,getSignInt(source));
     return 1;
 }
+//10のn乗した結果を返す
+//返り値
+//1...正常終了
+//0...オーバーフロー
+int mulByNInt(struct NUMBER *source,struct NUMBER *to,int n){
+    int i;
+    clearByZeroInt(to);
+    if(isZeroInt(source))
+        return 1;
+    if(n == 0){
+        copyNumberInt(source,to);
+        return 1;
+    }
+    if(DIGIT < n || source->n[DIGIT - n] != 0)
+        return 0;
+    for(i = 0; i < DIGIT - n; i++)
+        to->n[i + n] = source->n[i];
+    setSignInt(to, getSignInt(source));
+    return 1;
+}
+
 //返り値
 //割り算の剰余
 int divBy10Int(struct NUMBER *source,struct NUMBER *to){
     int i,temp;
     clearByZeroInt(to);
+    if(isZeroInt(source))
+        return 0;
     temp = source->n[0];
     for(i = 0;i < DIGIT - 1; i++){
         to->n[i] = source->n[i + 1];
@@ -198,6 +221,30 @@ int divBy10Int(struct NUMBER *source,struct NUMBER *to){
     setSignInt(to,getSignInt(source));
     return getSignInt(source) * temp;
 }
+//10のn乗したぶんで割る
+//0除算はエラー。桁数以上除算はエラー
+//あまりはNUMBERで返す
+int divByNInt(struct NUMBER *source,struct NUMBER *to, int n, struct NUMBER *div){
+    int i;
+    clearByZeroInt(to);
+    if(div != NULL)
+        clearByZeroInt(div);
+    if(isZeroInt(source) || DIGIT <= n)
+        return 0;
+    for(i = 0; i < DIGIT; i++){
+        if(i < n){
+            if(div != NULL)
+                div->n[i] = source->n[i];
+        }
+        else
+            to->n[i - n] = source->n[i];
+    }
+    setSignInt(to, getSignInt(source));
+    if(div != NULL)
+        setSignInt(div, getSignInt(source));
+    return 1;
+}
+
 //返り値
 //1...正常終了
 //0...設定できなかった
@@ -446,7 +493,7 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
     int addendSign = getSignInt(&addend->n);
     int augendDigitDecimal = getDigitDecimal(augend);
     int addendDigitDecimal = getDigitDecimal(addend);
-    int digitDiff;
+    int digitDiff, moveableDigit;
     int i, j, c;
     struct NUMBER temp1,temp2,temp3;
     struct FLOAT temp4,temp5;
@@ -455,20 +502,22 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
         //桁調整をする方を決める。
         if(augendDigitDecimal > addendDigitDecimal){
             digitDiff = augendDigitDecimal - addendDigitDecimal;
+            moveableDigit = DIGIT - getDigitInt(&addend->n);
             copyNumberInt(&augend->n, &temp3);
             copyNumberInt(&addend->n, &temp1);
-            for(i = 0;i < digitDiff; i++){
-                if(!mulBy10Int(&temp1, &temp2)){
-                    //もう一方をキャスト
-                    for(j = i; j < digitDiff; j++){
-                        divBy10Int(&temp3, &temp2);
-                        copyNumberInt(&temp2, &temp3);
-                    }
-
-                    break;
-                }
+            if(moveableDigit - digitDiff >= 0){
+                mulByNInt(&temp1, &temp2, digitDiff);
                 copyNumberInt(&temp2, &temp1);
+            }else{
+                mulByNInt(&temp1, &temp2, moveableDigit);
+                copyNumberInt(&temp2, &temp1);
+                divByNInt(&temp3, &temp2, digitDiff - moveableDigit,NULL);
+                copyNumberInt(&temp2, &temp3);
+
             }
+            dispNumberInt(&temp3);puts("");
+            dispNumberInt(&temp1);puts("");
+
             if(addInt(&temp1, &temp3, &temp2,&c)){
                 copyNumberInt(&temp2, &ans->n);
                 ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
@@ -621,26 +670,27 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
     int subtrahendSign = getSignInt(&subtrahend->n);
     int minuendDigitDecimal = getDigitDecimal(minuend);
     int subtrahendDigitDecimal = getDigitDecimal(subtrahend);
-    int digitDiff;
+    int digitDiff, moveableDigit;
     int i, j, b;
     struct NUMBER temp1,temp2,temp3;
     struct FLOAT temp4,temp5;
     if(minuendSign == 1 && subtrahendSign == 1){
         if(minuendDigitDecimal > subtrahendDigitDecimal){
             digitDiff = minuendDigitDecimal - subtrahendDigitDecimal;
+            moveableDigit = DIGIT - getDigitInt(&subtrahend->n);
             copyNumberInt(&minuend->n, &temp3);
             copyNumberInt(&subtrahend->n, &temp1);
-            for(i = 0;i < digitDiff; i++){
-                if(!mulBy10Int(&temp1, &temp2)){
-                    //もう一方をキャスト
-                    for(j = i; j < digitDiff; j++){
-                        divBy10Int(&temp3, &temp2);
-                        copyNumberInt(&temp2, &temp3);
-                    }
-
-                    break;
-                }
+            printf("%d,%d\n", digitDiff, moveableDigit);
+            if(moveableDigit - digitDiff >= 0){
+                mulByNInt(&temp1, &temp2, digitDiff);
                 copyNumberInt(&temp2, &temp1);
+            }else{
+                mulByNInt(&temp1, &temp2, moveableDigit);
+                copyNumberInt(&temp2, &temp1);
+                divByNInt(&temp3, &temp2, digitDiff - moveableDigit,NULL);
+                dispNumberInt(&temp2);puts("");
+                copyNumberInt(&temp2, &temp3);
+
             }
             dispNumberInt(&temp3);puts("");
             dispNumberInt(&temp1);puts("");
