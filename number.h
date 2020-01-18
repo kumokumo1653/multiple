@@ -1,4 +1,4 @@
-#define DIGIT 30
+#define DIGIT 5
 
 struct NUMBER{
     int n[DIGIT];
@@ -28,13 +28,16 @@ int setFloat(struct FLOAT *, int, int);
 int getInt(struct NUMBER *,int *);
 int getIntToString(struct NUMBER*,char *);
 int getDigitInt(struct NUMBER*);
-void swapInt(struct NUMBER *,struct NUMBER *);
+int getDigitDecimal(struct FLOAT*);
+void swapInt(struct NUMBER *, struct NUMBER *);
 int setSignInt(struct NUMBER *,int);
 int getSignInt(struct NUMBER *);
 int numCompInt(struct NUMBER *,struct NUMBER *);
-int numCompFfloat(struct FLOAT *,struct FLOAT *);
-int addInt(struct  NUMBER *, struct NUMBER *, struct NUMBER *);
-int subInt(struct NUMBER * ,struct NUMBER *, struct NUMBER *);
+int numCompFloat(struct FLOAT *,struct FLOAT *);
+int addInt(struct  NUMBER *, struct NUMBER *, struct NUMBER *,int *);
+int addFloat(struct  FLOAT *, struct FLOAT *, struct FLOAT *);
+int subInt(struct NUMBER * ,struct NUMBER *, struct NUMBER *, int *);
+int subFloat(struct FLOAT * ,struct FLOAT *, struct FLOAT *);
 int incrementInt(struct NUMBER *, struct NUMBER *);
 int decrementInt(struct NUMBER *, struct NUMBER *);
 int multipleInt(struct NUMBER *, struct NUMBER *, struct NUMBER *);
