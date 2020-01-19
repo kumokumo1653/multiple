@@ -1066,82 +1066,36 @@ int divIntInt(struct NUMBER *dividend, int divisor,struct NUMBER *quotient, int 
 //戻り値
 //0...エラー
 //1...正常終了
-int numSqrt(struct NUMBER *source,struct NUMBER *sqroot){
-    clearByZeroInt(sqroot);
-    //初期値をとりあえずソースに
-    struct NUMBER x, xOneBefore, xTwoBefore;
-    copyNumberInt(source,&x);
-    copyNumberInt(source,&xOneBefore);
-    copyNumberInt(source,&xTwoBefore);
-    if(getSignInt(source) == -1)
+int numSqrt(struct FLOAT *source,struct FLOAT *sqroot){
+    clearByZeroFloat(sqroot);
+    if(getSignInt(&source->n) == -1)
         return 0;
-    if(getDigitInt(source) <= 1 && (source->n[0] <= 1)){
-        copyNumberInt(source, sqroot);
-        return 1;
-    }
-    //振動,収束するまで繰り返す
-    while(1){
-        //前のxを更新
-        copyNumberInt(&xOneBefore,&xTwoBefore);
-        copyNumberInt(&x, &xOneBefore);
-
-        //xを更新
-        struct NUMBER divTemp,temp,addtemp;
-        int remain;
-        if(!(divideInt(source, &xOneBefore, &divTemp, &temp)))
-            return 0;
-        if(!(addInt(&divTemp, &xOneBefore,&addtemp,NULL)))
-            return 0;
-        if(!(divIntInt(&addtemp, 2,&x,&remain)))
-            return 0;
-        //収束
-        if(numCompInt(&x, &xOneBefore) == 0)
-            break;
-        //振動
-        if(numCompInt(&x, &xTwoBefore) == 0){
-            //小さい方を採用
-            if(numCompInt(&x, &xTwoBefore) == 1)
-                copyNumberInt(&xOneBefore, &x);
-            break;
-        }
-    }
-    copyNumberInt(&x, sqroot);
-    return 1;
-
+    
 }
 //baseのexponent乗を返す。(exponent>=0)ゼロのゼロ乗は1とする
 //オーバーフローしたら0を入れる。
 //0…エラー、オーバーフロー
 //1…正常終了
-int power(struct NUMBER *base, int exponent,struct NUMBER *ans){
+int power(struct FLOAT *base, int exponent,struct FLOAT *ans){
+    struct FLOAT square, powerTemp;
     if(exponent < 0)
         return 0;
     else if(exponent == 0){
-        setInt(ans,1);
+        setFloat(ans, 1, 0);
         return 1;
     }else if(exponent == 1){
-        copyNumberInt(base,ans);
+        copyNumberFloat(base,ans);
         return 1;
     }else if(exponent % 2 == 0){
-        struct NUMBER square;
-        if(!(multipleInt(base, base, &square, NULL))){
-            clearByZeroInt(ans);
+        if(!(multipleFloat(base, base, &square)))
             return 0;
-        }
-        if(!(power(&square, exponent / 2,ans))){
-            clearByZeroInt(ans);
+        if(!(power(&square, exponent / 2,ans)))
             return 0;
-        }
     }else{
-        struct NUMBER powerTemp;
-        if(!(power(base, exponent - 1, &powerTemp))){
-            clearByZeroInt(ans);
+        if(!(power(base, exponent - 1, &powerTemp)))
             return 0;
-        }
-        if(!(multipleInt(base, &powerTemp, ans, NULL))){
-            clearByZeroInt(ans);
+        if(!(multipleFloat(base, &powerTemp, ans)))
             return 0;
-        }
     }
     return 1;
 }
