@@ -1,4 +1,4 @@
-#define DIGIT 5
+#define DIGIT 10
 
 struct NUMBER{
     int n[DIGIT];
@@ -46,6 +46,8 @@ int decrementInt(struct NUMBER *, struct NUMBER *);
 int multipleInt(struct NUMBER *, struct NUMBER *, struct NUMBER *,struct NUMBER *);
 int multipleFloat(struct FLOAT *, struct FLOAT *, struct FLOAT *);
 int divideInt(struct NUMBER *, struct NUMBER *,struct NUMBER *, struct NUMBER *);
+int divideFloat(struct FLOAT *, struct FLOAT *, struct FLOAT *);
 int divIntInt(struct NUMBER *, int, struct NUMBER *,int *);
 int numSqrt(struct NUMBER *,struct NUMBER *);
 int power(struct NUMBER *, int ,struct NUMBER *);
+int reciprocal(struct FLOAT *, struct FLOAT *);

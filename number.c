@@ -282,21 +282,25 @@ int setFloat(struct FLOAT *num, int n, int e){
 
 //1...正常終了
 //0...エラー
+//
 int getInt(struct NUMBER *num,int *set){
     int i;
+    struct NUMBER temp;
     *set = 0;
     int digit = getDigitInt(num);
-    if(digit > 32){
-        printf("error:big digit\n");
-        return 0;
+    if(DIGIT >= 10){
+        setInt(&temp, INT_MAX);
+        if(numCompInt(&temp,num) < 0)
+            return 0;
+        setInt(&temp, INT_MIN);
+        if(numCompInt(&temp,num) > 0)
+            return 0;
     }
-    else if (digit == 0)
-        return 1;
     for(i = digit - 1; i >= 0;i--){
         *set += num->n[i];
-        *set *= 10;
+        if(i != 0)
+            *set *= 10;
     }
-    *set /= 10;
     //符号
     *set *= getSignInt(num);
     return 1;
@@ -424,17 +428,13 @@ int numCompFloat(struct FLOAT *a,struct FLOAT *b){
     else{
         if(Adigit > Bdigit){
             copyNumberInt(&b->n, &temp1);
-            for(i = 0; i < (Adigit - Bdigit); i++){
-                mulBy10Int(&temp1, &temp2);
-                copyNumberInt(&temp2,&temp1);
-            }
+            mulByNInt(&temp1, &temp2, Adigit - Bdigit);
+            copyNumberInt(&temp2, &temp1);
             return numCompInt(&a->n, &temp1);
         }else if(Adigit < Bdigit){
             copyNumberInt(&a->n, &temp1);
-            for(i = 0; i < Bdigit - Adigit; i++){
-                mulBy10Int(&temp1, &temp2);
-                copyNumberInt(&temp2, &temp1);
-            }
+            mulByNInt(&temp1, &temp2, Bdigit - Adigit);
+            copyNumberInt(&temp2, &temp1);
             return numCompInt(&temp1, &b->n);
         }else
             return numCompInt(&a->n, &b->n);
@@ -533,8 +533,6 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
                 copyNumberInt(&temp2, &temp3);
 
             }
-            dispNumberInt(&temp3);puts("");
-            dispNumberInt(&temp1);puts("");
 
             if(addInt(&temp1, &temp3, &temp2,&c)){
                 copyNumberInt(&temp2, &ans->n);
@@ -698,7 +696,6 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
             moveableDigit = DIGIT - getDigitInt(&subtrahend->n);
             copyNumberInt(&minuend->n, &temp3);
             copyNumberInt(&subtrahend->n, &temp1);
-            printf("%d,%d\n", digitDiff, moveableDigit);
             if(moveableDigit - digitDiff >= 0){
                 mulByNInt(&temp1, &temp2, digitDiff);
                 copyNumberInt(&temp2, &temp1);
@@ -706,14 +703,10 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
                 mulByNInt(&temp1, &temp2, moveableDigit);
                 copyNumberInt(&temp2, &temp1);
                 divByNInt(&temp3, &temp2, digitDiff - moveableDigit,NULL);
-                dispNumberInt(&temp2);puts("");
                 copyNumberInt(&temp2, &temp3);
 
             }
-            dispNumberInt(&temp3);puts("");
-            dispNumberInt(&temp1);puts("");
             if(subInt(&temp3, &temp1, &temp2, &b)){
-                dispNumberInt(&temp2);puts("");
                 copyNumberInt(&temp2, &ans->n);
                 ans->exp = (minuend->exp >= subtrahend->exp) ? minuend->exp : subtrahend->exp;
                 if(b)
@@ -1017,6 +1010,16 @@ int divideInt(struct NUMBER *dividend, struct NUMBER *divisor,struct NUMBER *quo
     }
     return 0;
 }
+//1...正常終了
+//0...エラー
+//逆数によって実装
+int divideFloat(struct FLOAT *dividend, struct FLOAT *divisor, struct FLOAT *ans){
+    struct FLOAT reciprocalNum;
+    if(!reciprocal(divisor, &reciprocalNum))
+        return 0;
+    multipleFloat(dividend, &reciprocalNum, ans);
+
+}
 //除数1桁のときの高速化
 //0 エラーゼロ除算
 //1 正常終了
@@ -1141,4 +1144,63 @@ int power(struct NUMBER *base, int exponent,struct NUMBER *ans){
         }
     }
     return 1;
+}
+//sourceの逆数を返す
+//1...正常終了
+//0...エラー
+int reciprocal(struct FLOAT *source, struct FLOAT *to){
+    //ニュートンラフソンをつかう
+    struct FLOAT x, xAfter, temp1, temp2, temp3, oldDist, newDist;
+    struct NUMBER temp;
+    int sourceSign = getSignInt(&source->n);
+    clearByZeroFloat(to);
+    if(isZeroFloat(source))
+        return 0;
+    if(sourceSign == 1){
+        //初期値x = 0.2 * 10 ^(-N)
+        setFloat(&x, 2, -(source->exp + 1));
+        //oldDist = abs(1-x * source)
+        if(!(multipleFloat(&x, source, &temp1)))
+            return 0;
+        setFloat(&temp2, 1, 0);
+        if(!subFloat(&temp2, &temp1, &temp3))
+            return 0;
+        getAbsFloat(&temp3, &oldDist);
+        //ニュートンラフソン
+        while(1){
+            setFloat(&temp1, 2, 0);
+            if(!multipleFloat(source, &x, &temp2))
+                return 0;
+            if(!subFloat(&temp1, &temp2, &temp3))
+                return 0;
+            if(!multipleFloat(&temp3, &x, &xAfter))
+                return 0;
+
+            //終了条件
+            //newDesit=abs(1-x*source)
+            if(!(multipleFloat(&xAfter, source, &temp1)))
+                return 0;
+            setFloat(&temp2, 1, 0);
+            if(!subFloat(&temp2, &temp1, &temp3))
+                return 0;
+            getAbsFloat(&temp3, &newDist);
+            //差が小さくなっていたら続行
+            if(numCompFloat(&oldDist, &newDist) <= 0)
+                break;
+            copyNumberFloat(&xAfter, &x);
+            copyNumberFloat(&newDist, &oldDist);
+        }
+        copyNumberFloat(&x, to);
+        divBy10Int(&to->n, &temp);
+        copyNumberInt(&temp, &to->n);
+        return 1;
+    }else if(sourceSign == -1){
+        getAbsFloat(source, &temp1);
+        if(reciprocal(&temp1, to)){
+            setSignInt(&to->n, -1);
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
 }

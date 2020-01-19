@@ -2,8 +2,10 @@
 #include <float.h>
 #include <limits.h>
 #include <malloc.h>
-#define DIGIT 2000000000
+#define DIGIT 3000000000
 
 int main(void){
-    char a[DIGIT];
+   int a = 3000000000; 
+   if(INT_MAX < DIGIT)
+      puts("");
 }
