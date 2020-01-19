@@ -306,7 +306,25 @@ int getDigitDecimal(struct FLOAT*num){
     int digit = getDigitInt(&num->n);
     return digit - 1 - num->exp;
 }
-
+//仮数部の無意味なゼロを省く
+//24000->24
+int clearByZeroDecimal(struct FLOAT *source, struct FLOAT *to){
+    int cnt = 0;
+    clearByZeroFloat(to);
+    if(isZeroFloat(source))
+        copyNumberFloat(source, to);
+    while(1){
+        if(source->n.n[cnt] != 0)
+            break;
+        cnt++;
+    }
+    if(cnt != 0)
+        divByNInt(&source->n, &to->n, cnt, NULL);
+    else
+        copyNumberFloat(source, to);
+    to->exp = source->exp;
+    return 1;
+}
 void swapInt(struct NUMBER *a,struct NUMBER *b){
     struct NUMBER temp;
     copyNumberInt(a,&temp);
@@ -544,7 +562,7 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
                 divBy10Int(&temp1, &ans->n);
                 ans->n.n[DIGIT - 1] = 1;
                 ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
-                if(ans->exp >= INT_MAX)
+                if(ans->exp == INT_MAX)
                     return 0;
                 ans->exp += 1;
                 return 1;
@@ -770,10 +788,17 @@ int decrementInt(struct NUMBER *source, struct NUMBER *to){
 //返り値
 //1...正常終了
 //0...オーバーフロー
-int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct NUMBER *ans){
-    struct NUMBER temp, productTemp;
+//オーバーフロー時の繰り上がり分をcarryに返す
+int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct NUMBER *ans, struct NUMBER *c){
+    struct NUMBER temp, productTemp,carryTemp1,carryTemp2,carryTemp3;
     int carry = 0;//繰り上がり
     clearByZeroInt(ans);
+    if(c != NULL){
+        clearByZeroInt(c);
+    }
+    clearByZeroInt(&carryTemp1);
+    clearByZeroInt(&carryTemp2);
+    clearByZeroInt(&carryTemp3);
     int i, j;
     int multiplicandDigit = getSignInt(multiplicand);
     int multiplierDigit = getSignInt(multiplier);
@@ -781,33 +806,41 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     if(multiplicandDigit == 1 && multiplierDigit == 1){
         for (i = 0; i < DIGIT; i++){
             clearByZeroInt(&temp);
+            clearByZeroInt(&carryTemp2);
             for (j = 0; j < DIGIT; j++){
                 int product = multiplicand->n[j] * multiplier->n[i] + carry;
                 if ((j + i) < DIGIT){
                     temp.n[j + i] = product % 10;
-                }else if((product % 10) != 0){ 
-                    clearByZeroInt(ans);
-                    return 0;
+                }else if((product % 10) != 0){
+                    carryTemp2.n[(j + i) - DIGIT] = product % 10;
                 }
                 carry = product / 10;
             }
             if(carry != 0){
-                clearByZeroInt(ans);
-                return 0;
+                carryTemp2.n[i] = carry;
+                carry = 0;
             }
             //ansにtempを加える
             if(!addInt(ans, &temp, &productTemp,NULL)){
-                clearByZeroInt(ans);
-                return 0;
+                incrementInt(&carryTemp2,&carryTemp3);
+                copyNumberInt(&carryTemp3,&carryTemp2);
             }
             copyNumberInt(&productTemp, ans);
+
+            //繰り上がりの計算
+            addInt(&carryTemp1, &carryTemp2, &carryTemp3,NULL);
+            copyNumberInt(&carryTemp3, &carryTemp1);
         }
+        if(c != NULL)
+            copyNumberInt(&carryTemp1, c);
+        if(!isZeroInt(&carryTemp1))
+            return 0;
         return 1;
     }//負×正
     else if(multiplicandDigit == -1 && multiplierDigit == 1){
         struct NUMBER temp;
         getAbsInt(multiplicand,&temp);
-        if(!multipleInt(&temp,multiplier,ans)){
+        if(!multipleInt(&temp,multiplier,ans,NULL)){
             clearByZeroInt(ans);
             return 0;
         }
@@ -816,7 +849,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     }else if(multiplicandDigit == 1 && multiplierDigit == -1){
         struct NUMBER temp;
         getAbsInt(multiplier,&temp);
-        if(!multipleInt(multiplicand,&temp,ans)){
+        if(!multipleInt(multiplicand,&temp,ans, NULL)){
             clearByZeroInt(ans);
             return 0;
         }
@@ -826,11 +859,89 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
         struct NUMBER temp1,temp2;
         getAbsInt(multiplicand,&temp1);
         getAbsInt(multiplier,&temp2);
-        if(!multipleInt(&temp1,&temp2,ans)){
+        if(!multipleInt(&temp1,&temp2,ans, NULL)){
             clearByZeroInt(ans);
             return 0;
         }
         return 1;
+    }
+    return 0;
+}
+//返り値
+//1...正常終了
+//0...オーバーフロー
+int multipleFloat(struct FLOAT *multiplicand, struct FLOAT *multiplier, struct FLOAT *ans){
+    //指数部のみでオーバフローをとりあえず検知
+    int multiplicandSign = getSignInt(&multiplicand->n);
+    int multiplierSign = getSignInt(&multiplier->n);
+    int i;
+    clearByZeroFloat(ans);
+    struct NUMBER carry, temp;
+    struct FLOAT temp1, temp2;
+    int digit;
+    clearByZeroInt(&carry);
+    if((multiplicand->exp >= 0 && multiplier->exp >= 0) || (multiplicand->exp <= 0 && multiplier->exp <= 0)){
+        if(multiplicand->exp >= 0){
+            if(multiplier->exp > INT_MAX - multiplicand->exp)
+                return 0;
+        }else {
+            if(multiplier->exp < INT_MIN - multiplicand->exp)
+                return 0;
+        }
+    }
+    ////不要なゼロを消す
+    clearByZeroDecimal(multiplicand, &temp1);
+    copyNumberFloat(&temp1, multiplicand);
+    clearByZeroDecimal(multiplier, &temp2);
+    copyNumberFloat(&temp2, multiplier);
+    if(multiplicandSign == 1 && multiplierSign == 1){
+        if(multipleInt(&multiplicand->n, &multiplier->n, &ans->n, &carry)){
+            //仮数部がa.bで小数点が動く分も足す
+            ans->exp += multiplicand->exp + multiplier->exp;
+            if(getDigitInt(&multiplicand->n) + getDigitInt(&multiplier->n) <= getDigitInt(&ans->n)){
+                if(ans->exp == INT_MAX)
+                    return 0;
+                ans->exp++;
+            }
+
+            return 1;
+        }else{
+            ans->exp += multiplicand->exp + multiplier->exp;
+
+            //繰り上がりがあるかどうか
+            if(getDigitInt(&multiplicand->n) + getDigitInt(&multiplier->n) - DIGIT <= getDigitInt(&carry)){
+                if(ans->exp == INT_MAX)
+                    return 0;
+                ans->exp++;
+            }
+            divByNInt(&ans->n, &temp, getDigitInt(&carry), NULL);
+            digit = DIGIT - getDigitInt(&carry);
+            for(i = 0; i < getDigitInt(&carry); i++){
+                temp.n[digit + i] = carry.n[i];
+            }
+            copyNumberInt(&temp, &ans->n);
+            return 1;
+        }
+    }else if(multiplicandSign == -1 && multiplierSign == 1){
+        getAbsFloat(multiplicand, &temp1);
+        if(multipleFloat(&temp1, multiplier, ans)){
+            setSignInt(&ans->n, -1);
+            return 1;
+        }
+        return 0;
+    }else if(multiplicandSign == 1 && multiplierSign == -1){
+        getAbsFloat(multiplier, &temp2);
+        if(multipleFloat(multiplicand, &temp2, ans)){
+            setSignInt(&ans->n, -1);
+            return 1;
+        }
+        return 0;
+    }else if(multiplicandSign == -1 && multiplierSign == -1){
+        getAbsFloat(multiplicand, &temp1);
+        getAbsFloat(multiplier, &temp2);
+        if(multipleFloat(&temp1, &temp2, ans))
+            return 1;
+        return 0;
     }
     return 0;
 }
@@ -1010,7 +1121,7 @@ int power(struct NUMBER *base, int exponent,struct NUMBER *ans){
         return 1;
     }else if(exponent % 2 == 0){
         struct NUMBER square;
-        if(!(multipleInt(base, base, &square))){
+        if(!(multipleInt(base, base, &square, NULL))){
             clearByZeroInt(ans);
             return 0;
         }
@@ -1024,7 +1135,7 @@ int power(struct NUMBER *base, int exponent,struct NUMBER *ans){
             clearByZeroInt(ans);
             return 0;
         }
-        if(!(multipleInt(base, &powerTemp, ans))){
+        if(!(multipleInt(base, &powerTemp, ans, NULL))){
             clearByZeroInt(ans);
             return 0;
         }

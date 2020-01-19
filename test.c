@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <float.h>
+#include <limits.h>
+#include <malloc.h>
+#define DIGIT 2000000000
+
 int main(void){
-    int n[2] ={1,3};
-    printf("%d\n", n[-1]);
+    char a[DIGIT];
 }
