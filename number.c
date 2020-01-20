@@ -1018,7 +1018,7 @@ int divideFloat(struct FLOAT *dividend, struct FLOAT *divisor, struct FLOAT *ans
     if(!reciprocal(divisor, &reciprocalNum))
         return 0;
     multipleFloat(dividend, &reciprocalNum, ans);
-
+    return 1;
 }
 //除数1桁のときの高速化
 //0 エラーゼロ除算
@@ -1068,9 +1068,68 @@ int divIntInt(struct NUMBER *dividend, int divisor,struct NUMBER *quotient, int 
 //1...正常終了
 int numSqrt(struct FLOAT *source,struct FLOAT *sqroot){
     clearByZeroFloat(sqroot);
+    struct FLOAT x, xAfter, half, three, newDist, oldDist, temp1, temp2, temp3, temp4;
+    int cnt = 0;
     if(getSignInt(&source->n) == -1)
         return 0;
+    if(isZeroFloat(source))
+        return 1;
+    //初期値
+    if(!reciprocal(source,&x))
+        return 0;
+    setFloat(&half, 5, -1);
+    setFloat(&three, 3, 0);
+    //oldDist
+    if(!multipleFloat(&x, source, &temp1))
+        return 0;
+    if(!power(&temp1, 2, &temp2))
+        return 0;
+    if(!subFloat(source, &temp2, &temp3))
+        return 0;
+    getAbsFloat(&temp3, &oldDist);
+    dispNumberFloat(&oldDist);puts("");
     
+    //ニュートンラフソン
+    while(1){
+        //=x/2*(3-source*x^3)
+        if(!multipleFloat(&x, &half, &temp1))
+            return 0;
+        puts("1");
+        if(!power(&x, 3, &temp2))
+            return 0;
+        puts("2");
+        if(!multipleFloat(source, &temp2, &temp3))
+            return 0;
+        puts("3");
+        if(!subFloat(&three, &temp3, &temp2))
+            return 0;
+        puts("4");
+        //dispNumberFloat(&temp1);puts("");
+        //dispNumberFloat(&temp2);puts("");
+        if(!multipleFloat(&temp1, &temp2, &xAfter))
+            return 0;
+        puts("5");
+        //収束条件
+        if(!multipleFloat(&xAfter, source, &temp1))
+            return 0;
+        puts("6");
+        if(!power(&temp1, 2, &temp2))
+            return 0;
+        puts("7");
+        if(!subFloat(source, &temp2, &temp3))
+            return 0;
+        puts("8");
+        getAbsFloat(&temp3, &newDist);
+        if(numCompFloat(&oldDist, &newDist) <= 0)
+                break;
+        copyNumberFloat(&xAfter, &x);
+        copyNumberFloat(&newDist, &oldDist);
+    } 
+        if(!multipleFloat(&x, source, &temp1))
+            return 0;
+        copyNumberFloat(&temp1, sqroot);
+        return 1;
+     
 }
 //baseのexponent乗を返す。(exponent>=0)ゼロのゼロ乗は1とする
 //オーバーフローしたら0を入れる。

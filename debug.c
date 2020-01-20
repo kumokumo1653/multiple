@@ -13,12 +13,11 @@ int main(void){
     //for(i = 0; i < 10; i++){
         //setFloat(&a , rand() % 100000 * (rand() % 2 ? -1 : 1), rand() % 3 * (rand() % 2 ? 1 : -1) );
         //setFloat(&b, -rand() % 100000, rand() % 3 * (rand() % 2 ? 1 : -1));
-        setFloat(&a, 411, 1);
+        setFloat(&a, 2, 0);
         //setFloat(&b, -2, 0);
         dispNumberFloat(&a);puts("");
-        j = 8;
         //dispNumberFloat(&b);puts("");
-        printf("%d,d\n", j, power(&a, j, &c));
+        printf("%d\n", numSqrt(&a, &c));
         dispNumberFloat(&c);puts("");
         puts("");
 
