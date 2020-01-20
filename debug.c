@@ -13,7 +13,7 @@ int main(void){
     //for(i = 0; i < 10; i++){
         //setFloat(&a , rand() % 100000 * (rand() % 2 ? -1 : 1), rand() % 3 * (rand() % 2 ? 1 : -1) );
         //setFloat(&b, -rand() % 100000, rand() % 3 * (rand() % 2 ? 1 : -1));
-        setFloat(&a, 2, 0);
+        setFloat(&a, 3, -1);
         //setFloat(&b, -2, 0);
         dispNumberFloat(&a);puts("");
         //dispNumberFloat(&b);puts("");

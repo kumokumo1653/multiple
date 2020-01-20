@@ -36,29 +36,29 @@ void dispNumberFloat(struct FLOAT *num){
     if(exp >= 0){
 
         for(i = getDigitInt(&(num->n)) - 1; i >= 0; i--){
-            printf("%2d",num->n.n[i]);
+            printf("%1d",num->n.n[i]);
             if(exp == 0)
-                printf(" .");
+                printf(".");
             exp--;
         }
         if( exp >= 0 ){
-            printf(" 0");
+            printf("0");
             while(exp != 0){
-                printf(" 0");
+                printf("0");
                 exp--;
             }
-            printf(" .");
+            printf(".");
         }
     }else{
-        printf(" 0");
+        printf("0");
         exp++;
-        printf(" ."); 
+        printf("."); 
         while(exp != 0){
-            printf(" 0");
+            printf("0");
             exp++;
         }
         for(i = getDigitInt(&(num->n))- 1; i >= 0; i--)
-            printf("%2d",num->n.n[i]);
+            printf("%1d",num->n.n[i]);
 
     }
     
@@ -1068,68 +1068,41 @@ int divIntInt(struct NUMBER *dividend, int divisor,struct NUMBER *quotient, int 
 //1...正常終了
 int numSqrt(struct FLOAT *source,struct FLOAT *sqroot){
     clearByZeroFloat(sqroot);
-    struct FLOAT x, xAfter, half, three, newDist, oldDist, temp1, temp2, temp3, temp4;
-    int cnt = 0;
     if(getSignInt(&source->n) == -1)
         return 0;
     if(isZeroFloat(source))
         return 1;
+    struct FLOAT x, xAfter, half, three, newDist, oldDist, temp1, temp2, temp3, temp4;
     //初期値
-    if(!reciprocal(source,&x))
-        return 0;
+    copyNumberFloat(source, &x);
     setFloat(&half, 5, -1);
-    setFloat(&three, 3, 0);
     //oldDist
-    if(!multipleFloat(&x, source, &temp1))
+    if(!power(&x, 2, &temp1))
         return 0;
-    if(!power(&temp1, 2, &temp2))
+    if(!subFloat(&temp1, source, &temp2))
         return 0;
-    if(!subFloat(source, &temp2, &temp3))
-        return 0;
-    getAbsFloat(&temp3, &oldDist);
-    dispNumberFloat(&oldDist);puts("");
-    
-    //ニュートンラフソン
+    getAbsFloat(&temp2, &oldDist);
     while(1){
-        //=x/2*(3-source*x^3)
-        if(!multipleFloat(&x, &half, &temp1))
+        if(!divideFloat(source, &x, &temp1))
             return 0;
-        puts("1");
-        if(!power(&x, 3, &temp2))
+        if(!addFloat(&x, &temp1, &temp2))
             return 0;
-        puts("2");
-        if(!multipleFloat(source, &temp2, &temp3))
+        if(!multipleFloat(&half, &temp2, &xAfter))
             return 0;
-        puts("3");
-        if(!subFloat(&three, &temp3, &temp2))
+        //newDist
+        if(!power(&xAfter, 2, &temp1))
             return 0;
-        puts("4");
-        //dispNumberFloat(&temp1);puts("");
-        //dispNumberFloat(&temp2);puts("");
-        if(!multipleFloat(&temp1, &temp2, &xAfter))
+        if(!subFloat(&temp1, source, &temp2))
             return 0;
-        puts("5");
+        getAbsFloat(&temp2, &newDist);
         //収束条件
-        if(!multipleFloat(&xAfter, source, &temp1))
-            return 0;
-        puts("6");
-        if(!power(&temp1, 2, &temp2))
-            return 0;
-        puts("7");
-        if(!subFloat(source, &temp2, &temp3))
-            return 0;
-        puts("8");
-        getAbsFloat(&temp3, &newDist);
         if(numCompFloat(&oldDist, &newDist) <= 0)
-                break;
+            break;
         copyNumberFloat(&xAfter, &x);
         copyNumberFloat(&newDist, &oldDist);
-    } 
-        if(!multipleFloat(&x, source, &temp1))
-            return 0;
-        copyNumberFloat(&temp1, sqroot);
-        return 1;
-     
+    }
+    copyNumberFloat(&x, sqroot);
+    return 1;
 }
 //baseのexponent乗を返す。(exponent>=0)ゼロのゼロ乗は1とする
 //オーバーフローしたら0を入れる。
