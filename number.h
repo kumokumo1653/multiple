@@ -1,4 +1,4 @@
-#define DIGIT 100
+#define DIGIT 10
 
 struct NUMBER{
     int n[DIGIT];
@@ -14,6 +14,7 @@ void clearByZeroFloat(struct FLOAT *);
 void dispNumberInt(struct NUMBER *);
 void dispNumberFloat(struct FLOAT *);
 void dispNumberZeroSuppressInt(struct NUMBER *);
+void dispNumberFloatforCopy(struct FLOAT *);
 void setRandomInt(struct NUMBER *,int);
 void copyNumberInt(struct NUMBER *, struct NUMBER *);
 void copyNumberFloat(struct FLOAT *, struct FLOAT *);
@@ -49,5 +50,6 @@ int divideInt(struct NUMBER *, struct NUMBER *,struct NUMBER *, struct NUMBER *)
 int divideFloat(struct FLOAT *, struct FLOAT *, struct FLOAT *);
 int divIntInt(struct NUMBER *, int, struct NUMBER *,int *);
 int numSqrt(struct FLOAT *,struct FLOAT *);
+int numSqrt2(struct FLOAT *, struct FLOAT *);
 int power(struct FLOAT *, int ,struct FLOAT *);
 int reciprocal(struct FLOAT *, struct FLOAT *);

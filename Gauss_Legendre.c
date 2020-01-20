@@ -3,8 +3,9 @@
 #include <time.h>
 #include "number.h"
 
-#define CNT 10
+#define CNT 9
 int main(void){
+    time_t t1 = time(NULL);
     struct FLOAT a, b, t, p, aAfter, bAfter, tAfter, pAfter, half, two, four, PI, temp1, temp2, temp3;
     int cnt = 0;
     //初期値の設定
@@ -53,6 +54,7 @@ int main(void){
         if(!multipleFloat(&p, &two, &pAfter))
             return -1;
         
+        cnt++;
         if(cnt >= CNT)
             break;
         //更新
@@ -60,18 +62,20 @@ int main(void){
         copyNumberFloat(&bAfter, &b);
         copyNumberFloat(&tAfter, &t);
         copyNumberFloat(&pAfter, &p);
-        cnt++;
     }
 
     //pi
-    if(!addFloat(&a, &b, &temp1))
+    if(!addFloat(&aAfter, &bAfter, &temp1))
         return -1;
     if(!power(&temp1, 2, &temp2))
         return -1;
-    if(!multipleFloat(&t, &four, &temp3))
+    if(!multipleFloat(&tAfter, &four, &temp3))
         return -1;
     if(!divideFloat(&temp2, &temp3, &PI))
         return -1;
-    dispNumberFloat(&PI);puts("");
+    dispNumberFloatforCopy(&PI);
+    puts("");
+    time_t t2 = time(NULL);
+    printf("%ld秒",t2-t1);
     return 0;
 }

@@ -36,6 +36,42 @@ void dispNumberFloat(struct FLOAT *num){
     if(exp >= 0){
 
         for(i = getDigitInt(&(num->n)) - 1; i >= 0; i--){
+            printf("%2d",num->n.n[i]);
+            if(exp == 0)
+                printf(" .");
+            exp--;
+        }
+        if( exp >= 0 ){
+            printf(" 0");
+            while(exp != 0){
+                printf(" 0");
+                exp--;
+            }
+            printf(" .");
+        }
+    }else{
+        printf(" 0");
+        exp++;
+        printf(" ."); 
+        while(exp != 0){
+            printf(" 0");
+            exp++;
+        }
+        for(i = getDigitInt(&(num->n))- 1; i >= 0; i--)
+            printf("%2d",num->n.n[i]);
+
+    }
+    
+    
+}
+void dispNumberFloatforCopy(struct FLOAT *num){
+    int i;
+    int exp = num->exp;
+    if(getSignInt(&(num->n)) < 0)
+        printf("-");
+    if(exp >= 0){
+
+        for(i = getDigitInt(&(num->n)) - 1; i >= 0; i--){
             printf("%1d",num->n.n[i]);
             if(exp == 0)
                 printf(".");
@@ -62,7 +98,7 @@ void dispNumberFloat(struct FLOAT *num){
 
     }
     
-    
+
 }
 
 void dispNumberZeroSuppressInt(struct NUMBER *num){
@@ -1189,4 +1225,65 @@ int reciprocal(struct FLOAT *source, struct FLOAT *to){
         return 0;
     }
     return 0;
+}
+int numSqrt2(struct FLOAT *source, struct FLOAT *sqroot){
+    struct FLOAT x, xAfter, half, three, one, oldDist, newDist,temp1 , temp2, temp3, eps;
+    clearByZeroFloat(sqroot);
+    //初期値
+    setFloat(&x, 66 , -(source->exp / 3 + 1));
+    setFloat(&eps, 9, -DIGIT + 1);
+    setFloat(&half, 5, -1);
+    setFloat(&three, 3, 0);
+    setFloat(&one, 1, 0);
+    dispNumberFloat(&x);puts("");
+    //oldDist
+    if(!power(&x, 2, &temp1))
+        return 0;
+    if(!multipleFloat(&temp1, source, &temp2))
+        return 0;
+    if(!subFloat(&temp2, &one, &temp3))
+        return 0;
+    getAbsFloat(&temp3, &oldDist);
+
+    //ニュートンラフソン法
+    while(1){
+        if(!multipleFloat(&x, &half, &temp1))
+            return 0;
+        puts("1");
+        if(!power(&x, 3, &temp2))
+            return 0;
+        puts("2");
+        if(!multipleFloat(&temp2, source, &temp3))
+            return 0;
+        puts("3");
+        if(!subFloat(&three, &temp3, &temp2))
+            return 0;
+        puts("4");
+        if(!multipleFloat(&temp1, &temp2, &xAfter))
+            return 0;
+        dispNumberFloat(&xAfter);puts("");
+        puts("5");
+        
+        //newDist
+        if(!power(&xAfter, 2, &temp1))
+            return 0;
+        puts("6");
+        if(!multipleFloat(&temp1, source, &temp2))
+            return 0;
+        puts("7");
+        if(!subFloat(&temp2, &one, &temp3))
+            return 0;
+        puts("8");
+        getAbsFloat(&temp3, &newDist);
+        
+        //収束条件
+        if( numCompFloat(&oldDist, &newDist) <= 0 && numCompFloat(&newDist,&eps) <= 0)
+            break;
+        copyNumberFloat(&xAfter, &x);
+        copyNumberFloat(&newDist, &oldDist);
+        
+    }
+    if(!multipleFloat(&x, source, sqroot))
+        return 0;
+    return 1;
 }
