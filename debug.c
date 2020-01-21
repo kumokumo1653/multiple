@@ -11,14 +11,15 @@ int main(void){
     srand(time(NULL));
     int i,j;
     //for(i = 0; i < 10; i++){
-        //setFloat(&a , rand() % 100000 * (rand() % 2 ? -1 : 1), rand() % 3 * (rand() % 2 ? 1 : -1) );
-        //setFloat(&b, -rand() % 100000, rand() % 3 * (rand() % 2 ? 1 : -1));
-        setFloat(&a, 3, -1);
+        setInt(&e , -rand() % 100 );
+        setInt(&d, rand() % 100);
+        //setFloat(&a, 3, -1);
         //setFloat(&b, -2, 0);
-        dispNumberFloat(&a);puts("");
-        //dispNumberFloat(&b);puts("");
-        printf("%d\n", numSqrt(&a, &c));
-        dispNumberFloat(&c);puts("");
+        dispNumberInt(&e);puts("");
+        dispNumberInt(&d);puts("");
+        printf("%d\n", multipleInt(&e, &d, &f,&g));
+        dispNumberInt(&f);puts("");
+        dispNumberInt(&g);puts("");
         puts("");
 
     //}
