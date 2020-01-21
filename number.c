@@ -455,7 +455,6 @@ int numCompFloat(struct FLOAT *a,struct FLOAT *b){
     int Bexp = b->exp;
     int Adigit = getDigitInt(&a->n);
     int Bdigit = getDigitInt(&b->n);
-    int i;
     struct NUMBER temp1,temp2;
     if(Aexp > Bexp)
         return 1;
@@ -548,7 +547,7 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
     int augendDigitDecimal = getDigitDecimal(augend);
     int addendDigitDecimal = getDigitDecimal(addend);
     int digitDiff, moveableDigit;
-    int i, j, c;
+    int c;
     struct NUMBER temp1,temp2,temp3;
     struct FLOAT temp4,temp5;
     if(augendSign == 1 && addendSign == 1){
@@ -714,7 +713,7 @@ int subInt(struct NUMBER *minuend,struct NUMBER *subtrahend, struct NUMBER *ans,
 }
 
 int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans){
-
+    int b;
     clearByZeroFloat(ans);
 
     //桁調整をする方を決める。
@@ -723,7 +722,6 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
     int minuendDigitDecimal = getDigitDecimal(minuend);
     int subtrahendDigitDecimal = getDigitDecimal(subtrahend);
     int digitDiff, moveableDigit;
-    int i, j, b;
     struct NUMBER temp1,temp2,temp3;
     struct FLOAT temp4,temp5;
     if(minuendSign == 1 && subtrahendSign == 1){
@@ -829,14 +827,14 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     clearByZeroInt(&carryTemp2);
     clearByZeroInt(&carryTemp3);
     int i, j;
-    int multiplicandDigit = getSignInt(multiplicand);
-    int multiplierDigit = getSignInt(multiplier);
+    int multiplicandSign = getSignInt(multiplicand);
+    int multiplierSign = getSignInt(multiplier);
     //ともに正
-    if(multiplicandDigit == 1 && multiplierDigit == 1){
-        for (i = 0; i < DIGIT; i++){
+    if(multiplicandSign == 1 && multiplierSign == 1){
+        for (i = 0; i < getDigitInt(multiplier); i++){
             clearByZeroInt(&temp);
             clearByZeroInt(&carryTemp2);
-            for (j = 0; j < DIGIT; j++){
+            for (j = 0; j < getDigitInt(multiplicand); j++){
                 int product = multiplicand->n[j] * multiplier->n[i] + carry;
                 if ((j + i) < DIGIT){
                     temp.n[j + i] = product % 10;
@@ -846,7 +844,10 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
                 carry = product / 10;
             }
             if(carry != 0){
-                carryTemp2.n[i] = carry;
+                if((j + i) < DIGIT)
+                    temp.n[j + i] = carry;
+                else
+                    carryTemp2.n[(j + i) - DIGIT] = carry;
                 carry = 0;
             }
             //ansにtempを加える
@@ -855,7 +856,6 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
                 copyNumberInt(&carryTemp3,&carryTemp2);
             }
             copyNumberInt(&productTemp, ans);
-
             //繰り上がりの計算
             addInt(&carryTemp1, &carryTemp2, &carryTemp3,NULL);
             copyNumberInt(&carryTemp3, &carryTemp1);
@@ -866,7 +866,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
             return 0;
         return 1;
     }//負×正
-    else if(multiplicandDigit == -1 && multiplierDigit == 1){
+    else if(multiplicandSign == -1 && multiplierSign == 1){
         struct NUMBER temp;
         getAbsInt(multiplicand,&temp);
         if(!multipleInt(&temp,multiplier,ans,NULL)){
@@ -875,7 +875,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
         }
         setSignInt(ans,-1);
         return 1;
-    }else if(multiplicandDigit == 1 && multiplierDigit == -1){
+    }else if(multiplicandSign == 1 && multiplierSign == -1){
         struct NUMBER temp;
         getAbsInt(multiplier,&temp);
         if(!multipleInt(multiplicand,&temp,ans, NULL)){
@@ -884,7 +884,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
         }
         setSignInt(ans,-1);
         return 1;
-    }else if(multiplicandDigit == -1 && multiplierDigit == -1){
+    }else if(multiplicandSign == -1 && multiplierSign == -1){
         struct NUMBER temp1,temp2;
         getAbsInt(multiplicand,&temp1);
         getAbsInt(multiplier,&temp2);
@@ -1108,8 +1108,9 @@ int numSqrt(struct FLOAT *source,struct FLOAT *sqroot){
         return 0;
     if(isZeroFloat(source))
         return 1;
-    struct FLOAT x, xAfter, half, three, newDist, oldDist, temp1, temp2, temp3, temp4;
+    struct FLOAT x, xAfter, half, newDist, oldDist, temp1, temp2;
     //初期値
+    //setFloat(&x, 5, source->exp / 2);
     copyNumberFloat(source, &x);
     setFloat(&half, 5, -1);
     //oldDist
@@ -1172,7 +1173,7 @@ int power(struct FLOAT *base, int exponent,struct FLOAT *ans){
 //0...エラー
 int reciprocal(struct FLOAT *source, struct FLOAT *to){
     //ニュートンラフソンをつかう
-    struct FLOAT x, xAfter, temp1, temp2, temp3, oldDist, newDist;
+    struct FLOAT x, xAfter, temp1, temp2, temp3, two, one,oneNear, oldDist, newDist;
     struct NUMBER temp;
     int sourceSign = getSignInt(&source->n);
     clearByZeroFloat(to);
@@ -1181,29 +1182,29 @@ int reciprocal(struct FLOAT *source, struct FLOAT *to){
     if(sourceSign == 1){
         //初期値x = 0.2 * 10 ^(-N)
         setFloat(&x, 2, -(source->exp + 1));
+        setFloat(&one, 1, 0);
+        setFloat(&two, 2, 0);
+        if(!multipleFloat(&x, source, &oneNear))
+            return -1;
         //oldDist = abs(1-x * source)
         if(!(multipleFloat(&x, source, &temp1)))
             return 0;
-        setFloat(&temp2, 1, 0);
-        if(!subFloat(&temp2, &temp1, &temp3))
+        if(!subFloat(&one, &temp1, &temp3))
             return 0;
         getAbsFloat(&temp3, &oldDist);
         //ニュートンラフソン
+
         while(1){
-            setFloat(&temp1, 2, 0);
-            if(!multipleFloat(source, &x, &temp2))
-                return 0;
-            if(!subFloat(&temp1, &temp2, &temp3))
+            if(!subFloat(&two, &oneNear, &temp3))
                 return 0;
             if(!multipleFloat(&temp3, &x, &xAfter))
                 return 0;
 
             //終了条件
             //newDesit=abs(1-x*source)
-            if(!(multipleFloat(&xAfter, source, &temp1)))
+            if(!(multipleFloat(&xAfter, source, &oneNear)))
                 return 0;
-            setFloat(&temp2, 1, 0);
-            if(!subFloat(&temp2, &temp1, &temp3))
+            if(!subFloat(&one, &oneNear, &temp3))
                 return 0;
             getAbsFloat(&temp3, &newDist);
             //差が小さくなっていたら続行
