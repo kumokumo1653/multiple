@@ -1,4 +1,4 @@
-#define DIGIT 1100
+#define DIGIT 500
 
 struct NUMBER{
     int n[DIGIT];

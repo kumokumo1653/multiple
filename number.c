@@ -834,31 +834,35 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
         for (i = 0; i < getDigitInt(multiplier); i++){
             clearByZeroInt(&temp);
             clearByZeroInt(&carryTemp2);
-            for (j = 0; j < getDigitInt(multiplicand); j++){
-                int product = multiplicand->n[j] * multiplier->n[i] + carry;
-                if ((j + i) < DIGIT){
-                    temp.n[j + i] = product % 10;
-                }else if((product % 10) != 0){
-                    carryTemp2.n[(j + i) - DIGIT] = product % 10;
+            if(multiplier->n[i] == 0);
+            else{
+                for (j = 0; j < getDigitInt(multiplicand); j++){
+                    int product = multiplicand->n[j] * multiplier->n[i] + carry;
+                    if ((j + i) < DIGIT){
+                        temp.n[j + i] = product % 10;
+                    }else if((product % 10) != 0){
+                        carryTemp2.n[(j + i) - DIGIT] = product % 10;
+                    }
+                    carry = product / 10;
                 }
-                carry = product / 10;
+                if(carry != 0){
+                    if((j + i) < DIGIT)
+                        temp.n[j + i] = carry;
+                    else
+                        carryTemp2.n[(j + i) - DIGIT] = carry;
+                    carry = 0;
+                }
+            
+                //ansにtempを加える
+                if(!addInt(ans, &temp, &productTemp,NULL)){
+                    incrementInt(&carryTemp2,&carryTemp3);
+                    copyNumberInt(&carryTemp3,&carryTemp2);
+                }
+                copyNumberInt(&productTemp, ans);
+                //繰り上がりの計算
+                addInt(&carryTemp1, &carryTemp2, &carryTemp3,NULL);
+                copyNumberInt(&carryTemp3, &carryTemp1);
             }
-            if(carry != 0){
-                if((j + i) < DIGIT)
-                    temp.n[j + i] = carry;
-                else
-                    carryTemp2.n[(j + i) - DIGIT] = carry;
-                carry = 0;
-            }
-            //ansにtempを加える
-            if(!addInt(ans, &temp, &productTemp,NULL)){
-                incrementInt(&carryTemp2,&carryTemp3);
-                copyNumberInt(&carryTemp3,&carryTemp2);
-            }
-            copyNumberInt(&productTemp, ans);
-            //繰り上がりの計算
-            addInt(&carryTemp1, &carryTemp2, &carryTemp3,NULL);
-            copyNumberInt(&carryTemp3, &carryTemp1);
         }
         if(c != NULL)
             copyNumberInt(&carryTemp1, c);

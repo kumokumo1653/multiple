@@ -13,8 +13,8 @@ int main(void){
     //for(i = 0; i < 10; i++){
         //setFloat(&a , rand() % 100000 * (rand() % 2 ? -1 : 1), rand() % 3 * (rand() % 2 ? 1 : -1) );
         //setFloat(&b, rand() % 100000, rand() % 3 * (rand() % 2 ? 1 : -1));
-        setFloat(&a, 2, 0);
-        //setFloat(&b, 20331, -2);
+        setFloat(&a, 25065, 0);
+        //setFloat(&b, 23405, -1);
         dispNumberFloat(&a);puts("");
         //dispNumberFloat(&b);puts("");
         printf("%d\n", numSqrt(&a, &c));
