@@ -833,10 +833,10 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     int multiplierDigit = getSignInt(multiplier);
     //ともに正
     if(multiplicandDigit == 1 && multiplierDigit == 1){
-        for (i = 0; i < DIGIT; i++){
+        for (i = 0; i <= getDigitInt(multiplicand); i++){
             clearByZeroInt(&temp);
             clearByZeroInt(&carryTemp2);
-            for (j = 0; j < DIGIT; j++){
+            for (j = 0; j <= getDigitInt(multiplier); j++){
                 int product = multiplicand->n[j] * multiplier->n[i] + carry;
                 if ((j + i) < DIGIT){
                     temp.n[j + i] = product % 10;

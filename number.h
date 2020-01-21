@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #define DIGIT 10
+=======
+#define DIGIT 7
+>>>>>>> 1dab98f6fa29caeaca6be35dd45d934575d27b91
 
 struct NUMBER{
     int n[DIGIT];
