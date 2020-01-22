@@ -24,7 +24,7 @@ void dispNumberInt(struct NUMBER *num){
     else
         printf("-");
     for(i = DIGIT - 1;i >= 0;i--)
-        printf("%2d",num->n[i]);
+        printf(" %09d",num->n[i]);
 }
 void dispNumberFloat(struct FLOAT *num){
     int i;
@@ -36,29 +36,33 @@ void dispNumberFloat(struct FLOAT *num){
     if(exp >= 0){
 
         for(i = getDigitInt(&(num->n)) - 1; i >= 0; i--){
-            printf("%2d",num->n.n[i]);
+            printf(" %09d",num->n.n[i]);
             if(exp == 0)
-                printf(" .");
+                printf(".");
             exp--;
         }
         if( exp >= 0 ){
-            printf(" 0");
+            printf(" ");
+            printf(DISPRAD);
             while(exp != 0){
-                printf(" 0");
+                printf(" ");
+                printf(DISPRAD);
                 exp--;
             }
-            printf(" .");
+            printf(".");
         }
     }else{
-        printf(" 0");
+        printf(" ");
+        printf(DISPRAD);
         exp++;
-        printf(" ."); 
+        printf("."); 
         while(exp != 0){
-            printf(" 0");
+            printf(" ");
+            printf(DISPRAD);
             exp++;
         }
         for(i = getDigitInt(&(num->n))- 1; i >= 0; i--)
-            printf("%2d",num->n.n[i]);
+            printf(" %09d",num->n.n[i]);
 
     }
     
@@ -72,75 +76,35 @@ void dispNumberFloatforCopy(struct FLOAT *num){
     if(exp >= 0){
 
         for(i = getDigitInt(&(num->n)) - 1; i >= 0; i--){
-            printf("%1d",num->n.n[i]);
+            printf("%d",num->n.n[i]);
             if(exp == 0)
                 printf(".");
             exp--;
         }
         if( exp >= 0 ){
-            printf("0");
+            printf(DISPRAD);
             while(exp != 0){
-                printf("0");
+                printf(DISPRAD);
                 exp--;
             }
             printf(".");
         }
     }else{
-        printf("0");
+        printf(DISPRAD);
         exp++;
         printf("."); 
         while(exp != 0){
-            printf("0");
+            printf(DISPRAD);
             exp++;
         }
         for(i = getDigitInt(&(num->n))- 1; i >= 0; i--)
-            printf("%1d",num->n.n[i]);
+            printf("%d",num->n.n[i]);
 
     }
     
 
 }
 
-void dispNumberZeroSuppressInt(struct NUMBER *num){
-    int i;
-    if(getSignInt(num) > 0)
-        printf("+");
-    else
-        printf("-");
-    for(i = DIGIT - 1; i >= 0;i--){
-        if(num->n[i] != 0)
-            break;
-    }
-    if(i == 0){
-        printf(" 0");
-        return;
-    }
-    for(; i >= 0;i--){
-        printf("%2d",num->n[i]);
-    }
-}
-void setRandomInt(struct NUMBER *num,int digit){
-    int i;
-    clearByZeroInt(num);
-    if(digit > DIGIT){
-        printf("Argument is abnormal");
-        return;
-    }
-    for(i = 0;i < digit;i++){
-        num->n[i] = rand() % 10;
-    }
-    int Sign = rand() % 2;
-    switch (Sign)
-    {
-    case 1:
-        setSignInt(num,1);
-        break;
-    case 0:
-        setSignInt(num,-1);
-        break;
-
-    }
-}
 void copyNumberInt(struct NUMBER *source, struct NUMBER *to){
     int i;
     clearByZeroInt(to);
@@ -207,7 +171,7 @@ int isZeroFloat(struct FLOAT *num){
 //返り値
 //1...正常終了
 //0...オーバーフロー
-int mulBy10Int(struct NUMBER *source,struct NUMBER *to){
+int mulByRadInt(struct NUMBER *source,struct NUMBER *to){
     int i;
     clearByZeroInt(to);
     if(isZeroInt(source))
@@ -244,7 +208,7 @@ int mulByNInt(struct NUMBER *source,struct NUMBER *to,int n){
 
 //返り値
 //割り算の剰余
-int divBy10Int(struct NUMBER *source,struct NUMBER *to){
+int divByRadInt(struct NUMBER *source,struct NUMBER *to){
     int i,temp;
     clearByZeroInt(to);
     if(isZeroInt(source))
@@ -280,67 +244,40 @@ int divByNInt(struct NUMBER *source,struct NUMBER *to, int n, struct NUMBER *div
         setSignInt(div, getSignInt(source));
     return 1;
 }
-
-//返り値
 //1...正常終了
 //0...設定できなかった
-int setInt(struct NUMBER *num,int set){
-    clearByZeroInt(num);
-    int digit = 0;
-    if(set == 0)
-        return 1;
-    //符号をセット
-    if(set > 0)
-        setSignInt(num,1);
-    else
-        setSignInt(num,-1);
-    
-    while(set != 0){
-        if(digit > DIGIT){
-            printf("error:Few digits\n");
-            clearByZeroInt(num);
-            return 0;
-        }
-        int surplus = abs(set % 10);
-        num->n[digit] = surplus;
-        digit++;
-        set /= 10;
-    }
-    return 1;
-}
-int setFloat(struct FLOAT *num, int n, int e){
-    clearByZeroFloat(num);
-    setInt(&(num->n), n);
-    num->exp = e;
-    return 1;
-}
-
-
-//1...正常終了
-//0...エラー
-//
-int getInt(struct NUMBER *num,int *set){
+//digit桁の乱数をnumに入れる。signは符号
+int setRandomInt(struct NUMBER *num, int digit){
     int i;
-    struct NUMBER temp;
-    *set = 0;
-    int digit = getDigitInt(num);
-    if(DIGIT >= 10){
-        setInt(&temp, INT_MAX);
-        if(numCompInt(&temp,num) < 0)
-            return 0;
-        setInt(&temp, INT_MIN);
-        if(numCompInt(&temp,num) > 0)
-            return 0;
-    }
-    for(i = digit - 1; i >= 0;i--){
-        *set += num->n[i];
-        if(i != 0)
-            *set *= 10;
-    }
-    //符号
-    *set *= getSignInt(num);
+    clearByZeroInt(num);
+    if(digit > DIGIT)
+        return 0;
+    num->sign = rand() % 2 ? -1 : 1;
+    for(i = 0; i < digit; i++)
+        num->n[i] = rand() % RADIX;
     return 1;
 }
+//返り値
+//setをindexに格納
+//1...正常終了
+//0...設定できなかった
+int setInt(struct NUMBER *num, int set ,int index){
+    clearByZeroInt(num);
+    if(set >= 0 && set < RADIX)
+        num->n[index] = set;
+    else
+        return 0;
+    return 1;
+}
+//1...正常設定
+//0...設定できなかった
+int setRandomFloat(struct FLOAT *num, int digit, int ex){
+    clearByZeroFloat(num);
+    if(!setRandomInt(&num->n, digit))
+        return 0;
+    num->exp = rand() % ex * (rand() % 2 ? 1 : -1); 
+}
+
 //小数点以下の桁数を返す
 int getDigitDecimal(struct FLOAT*num){
     int digit = getDigitInt(&num->n);
@@ -488,9 +425,9 @@ int addInt(struct  NUMBER *augend, struct NUMBER *addend, struct NUMBER *ans, in
     if((augendSign == 1) && (addendSign == 1)){
         clearByZeroInt(ans);
         for(i = 0; i < DIGIT;i++){
-            int sum = augend->n[i] + addend->n[i] + carry;
-            ans->n[i] = sum % 10;
-            carry = sum / 10;
+            long long int sum = augend->n[i] + addend->n[i] + carry;
+            ans->n[i] = sum % RADIX;
+            carry = sum / RADIX;
             if(c != NULL && i == digit - 1){
                 if(carry)
                     *c = 1;
@@ -577,7 +514,7 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
                     ans->exp++;
                 return 1;
             }else{
-                divBy10Int(&temp2, &ans->n);
+                divByRadInt(&temp2, &ans->n);
                 ans->n.n[DIGIT - 1] = 1;
                 ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
                 if(ans->exp >= INT_MAX)
@@ -593,7 +530,7 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
                     ans->exp++;
                 return 1;
             }else{
-                divBy10Int(&temp1, &ans->n);
+                divByRadInt(&temp1, &ans->n);
                 ans->n.n[DIGIT - 1] = 1;
                 ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
                 if(ans->exp == INT_MAX)
@@ -665,7 +602,7 @@ int subInt(struct NUMBER *minuend,struct NUMBER *subtrahend, struct NUMBER *ans,
                     ans->n[i] = minuendDigit - subtrahendDigit;
                     borrrow = 0;
                 }else{
-                    ans->n[i] = 10 + minuendDigit - subtrahendDigit;
+                    ans->n[i] = RADIX + minuendDigit - subtrahendDigit;
                     borrrow = 1;
                 }
             }
@@ -804,20 +741,20 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
 //1…正常終了
 int incrementInt(struct NUMBER *source, struct NUMBER *to){
     struct NUMBER one;
-    setInt(&one,1);
+    setInt(&one, 1, 0);
     return addInt(source,&one,to,NULL);
 }
 
 int decrementInt(struct NUMBER *source, struct NUMBER *to){
     struct NUMBER one;
-    setInt(&one,-1);
-    return addInt(source,&one,to,NULL);
+    setInt(&one,1, 0);
+    return subInt(source,&one,to,NULL);
 
 }
 //返り値
 //1...正常終了
 //0...オーバーフロー
-//オーバーフロー時の繰り上がり分をcarryに返す
+//オーバーフロー時の繰り上がり分をcに返す
 int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct NUMBER *ans, struct NUMBER *c){
     struct NUMBER temp, productTemp,carryTemp1,carryTemp2,carryTemp3;
     int carry = 0;//繰り上がり
@@ -833,20 +770,23 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     int multiplierDigit = getSignInt(multiplier);
     //ともに正
     if(multiplicandDigit == 1 && multiplierDigit == 1){
-        for (i = 0; i < DIGIT; i++){
+        for (i = 0; i < getDigitInt(multiplier); i++){
             clearByZeroInt(&temp);
             clearByZeroInt(&carryTemp2);
-            for (j = 0; j < DIGIT; j++){
-                int product = multiplicand->n[j] * multiplier->n[i] + carry;
+            for (j = 0; j < getDigitInt(multiplicand); j++){
+                long long int product = (long long int)multiplicand->n[j] * (long long int)multiplier->n[i] + (long long int)carry;
                 if ((j + i) < DIGIT){
-                    temp.n[j + i] = product % 10;
+                    temp.n[j + i] = (int)(product % RADIX);
                 }else if((product % 10) != 0){
-                    carryTemp2.n[(j + i) - DIGIT] = product % 10;
+                    carryTemp2.n[(j + i) - DIGIT] = (int)(product % RADIX);
                 }
-                carry = product / 10;
+                carry = (int)(product / RADIX);
             }
             if(carry != 0){
-                carryTemp2.n[i] = carry;
+                if((j + i) < DIGIT)
+                    temp.n[j + i] = carry;
+                else
+                    carryTemp2.n[(j + i) - DIGIT] = carry;
                 carry = 0;
             }
             //ansにtempを加える
@@ -896,6 +836,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     }
     return 0;
 }
+/*
 //返り値
 //1...正常終了
 //0...オーバーフロー
@@ -998,15 +939,15 @@ int divideInt(struct NUMBER *dividend, struct NUMBER *divisor,struct NUMBER *quo
                 while(1){
                     if(numCompInt(&tempDividend,remainder) >= 0){
                         //remainderを10倍
-                        mulBy10Int(remainder,&tempRemainder);
+                        mulByRadInt(remainder,&tempRemainder);
                         copyNumberInt(&tempRemainder,remainder);
                         //tempも10倍
-                        mulBy10Int(&temp,&tempTemp);
+                        mulByRadInt(&temp,&tempTemp);
                         copyNumberInt(&tempTemp,&temp);
                     }else{
-                        divBy10Int(remainder,&tempRemainder);
+                        divByRadInt(remainder,&tempRemainder);
                         copyNumberInt(&tempRemainder,remainder);
-                        divBy10Int(&temp,&tempTemp);
+                        divByRadInt(&temp,&tempTemp);
                         copyNumberInt(&tempTemp,&temp);
                         break;
                     }
@@ -1213,7 +1154,7 @@ int reciprocal(struct FLOAT *source, struct FLOAT *to){
             copyNumberFloat(&newDist, &oldDist);
         }
         copyNumberFloat(&x, to);
-        divBy10Int(&to->n, &temp);
+        divByRadInt(&to->n, &temp);
         copyNumberInt(&temp, &to->n);
         return 1;
     }else if(sourceSign == -1){
@@ -1287,3 +1228,4 @@ int numSqrt2(struct FLOAT *source, struct FLOAT *sqroot){
         return 0;
     return 1;
 }
+*/
