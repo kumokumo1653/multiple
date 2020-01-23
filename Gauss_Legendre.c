@@ -3,28 +3,37 @@
 #include <time.h>
 #include "number.h"
 
-#define CNT 9
+#define CNT 20
 int main(void){
     time_t t1 = time(NULL);
     struct FLOAT a, b, t, p, aAfter, bAfter, tAfter, pAfter, half, two, four, PI, temp1, temp2, temp3;
     int cnt = 0;
     //初期値の設定
-    setFloat(&half, 5, -1);
-    setFloat(&two, 2, 0);
-    setFloat(&four, 4, 0);
+    clearByZeroFloat(&half);
+    clearByZeroFloat(&two);
+    clearByZeroFloat(&four);
+    clearByZeroFloat(&a);
+    clearByZeroFloat(&temp1);
+    clearByZeroFloat(&t);
+    clearByZeroFloat(&p);
+    setInt(&half.n, 500000000, 0);
+    setExp(&half, -1);
+    setInt(&two.n, 2,0);
+    setInt(&four.n, 4, 0);
     //a
-    setFloat(&a, 1, 0);
+    setInt(&a.n, 1, 0);
 
     //b
-    setFloat(&temp1, 2, 0);
+    setInt(&temp1.n, 2, 0);
     numSqrt(&temp1,&temp2);
     reciprocal(&temp2, &b);
 
     //t
-    setFloat(&t, 25, -1);
+    setInt(&t.n, 250000000, 0);
+    setExp(&t, -1);
 
     //p
-    setFloat(&p, 1, 0);
+    setInt(&p.n, 1, 0);
 
     while(1){
         

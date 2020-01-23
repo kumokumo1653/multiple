@@ -76,7 +76,7 @@ void dispNumberFloatforCopy(struct FLOAT *num){
     if(exp >= 0){
 
         for(i = getDigitInt(&(num->n)) - 1; i >= 0; i--){
-            printf("%d",num->n.n[i]);
+            printf("%09d",num->n.n[i]);
             if(exp == 0)
                 printf(".");
             exp--;
@@ -98,7 +98,7 @@ void dispNumberFloatforCopy(struct FLOAT *num){
             exp++;
         }
         for(i = getDigitInt(&(num->n))- 1; i >= 0; i--)
-            printf("%d",num->n.n[i]);
+            printf("%09d",num->n.n[i]);
 
     }
     
@@ -261,7 +261,6 @@ int setRandomInt(struct NUMBER *num, int digit){
 //1...正常終了
 //0...設定できなかった
 int setInt(struct NUMBER *num, int set ,int index){
-    clearByZeroInt(num);
     if(set >= 0 && set < RADIX)
         num->n[index] = set;
     else
@@ -747,6 +746,7 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
 //1…正常終了
 int incrementInt(struct NUMBER *source, struct NUMBER *to){
     struct NUMBER one;
+    clearByZeroInt(&one);
     setInt(&one, 1, 0);
     return addInt(source,&one,to,NULL);
 }
@@ -783,7 +783,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
                 long long int product = (long long int)multiplicand->n[j] * (long long int)multiplier->n[i] + (long long int)carry;
                 if ((j + i) < DIGIT){
                     temp.n[j + i] = (int)(product % RADIX);
-                }else if((product % 10) != 0){
+                }else if((product % RADIX) != 0){
                     carryTemp2.n[(j + i) - DIGIT] = (int)(product % RADIX);
                 }
                 carry = (int)(product / RADIX);
@@ -842,7 +842,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     }
     return 0;
 }
-/*
+
 //返り値
 //1...正常終了
 //0...オーバーフロー
@@ -872,10 +872,9 @@ int multipleFloat(struct FLOAT *multiplicand, struct FLOAT *multiplier, struct F
     copyNumberFloat(&temp2, multiplier);
     if(multiplicandSign == 1 && multiplierSign == 1){
         if(multipleInt(&multiplicand->n, &multiplier->n, &ans->n, &carry)){
-            //仮数部がa.bで小数点が動く分も足す
             ans->exp += multiplicand->exp + multiplier->exp;
             if(getDigitInt(&multiplicand->n) + getDigitInt(&multiplier->n) <= getDigitInt(&ans->n)){
-                if(ans->exp == INT_MAX)
+                if(getExp(ans) == INT_MAX)
                     return 0;
                 ans->exp++;
             }
@@ -921,7 +920,7 @@ int multipleFloat(struct FLOAT *multiplicand, struct FLOAT *multiplier, struct F
     }
     return 0;
 }
-
+/*
 //返り値
 //0 エラー 0除算
 //1 正常終了
@@ -993,6 +992,7 @@ int divideInt(struct NUMBER *dividend, struct NUMBER *divisor,struct NUMBER *quo
     }
     return 0;
 }
+*/
 //1...正常終了
 //0...エラー
 //逆数によって実装
@@ -1003,6 +1003,7 @@ int divideFloat(struct FLOAT *dividend, struct FLOAT *divisor, struct FLOAT *ans
     multipleFloat(dividend, &reciprocalNum, ans);
     return 1;
 }
+/*
 //除数1桁のときの高速化
 //0 エラーゼロ除算
 //1 正常終了
@@ -1045,20 +1046,24 @@ int divIntInt(struct NUMBER *dividend, int divisor,struct NUMBER *quotient, int 
     }
     return 0;
 }
+*/
 //正の平方根を求める。
 //戻り値
 //0...エラー
 //1...正常終了
 int numSqrt(struct FLOAT *source,struct FLOAT *sqroot){
+    struct FLOAT x, xAfter, half, newDist, oldDist, temp1, temp2;
     clearByZeroFloat(sqroot);
     if(getSignInt(&source->n) == -1)
         return 0;
     if(isZeroFloat(source))
         return 1;
-    struct FLOAT x, xAfter, half, three, newDist, oldDist, temp1, temp2, temp3, temp4;
     //初期値
+    //setFloat(&x, 5, source->exp / 2);
     copyNumberFloat(source, &x);
-    setFloat(&half, 5, -1);
+    clearByZeroFloat(&half);
+    setInt(&half.n, 500000000, 0);
+    setExp(&half, -1);
     //oldDist
     if(!power(&x, 2, &temp1))
         return 0;
@@ -1087,6 +1092,7 @@ int numSqrt(struct FLOAT *source,struct FLOAT *sqroot){
     copyNumberFloat(&x, sqroot);
     return 1;
 }
+
 //baseのexponent乗を返す。(exponent>=0)ゼロのゼロ乗は1とする
 //オーバーフローしたら0を入れる。
 //0…エラー、オーバーフロー
@@ -1096,7 +1102,9 @@ int power(struct FLOAT *base, int exponent,struct FLOAT *ans){
     if(exponent < 0)
         return 0;
     else if(exponent == 0){
-        setFloat(ans, 1, 0);
+        clearByZeroFloat(ans);
+        setInt(&ans->n, 1, 0);
+        setExp(ans, 1);
         return 1;
     }else if(exponent == 1){
         copyNumberFloat(base,ans);
@@ -1114,43 +1122,49 @@ int power(struct FLOAT *base, int exponent,struct FLOAT *ans){
     }
     return 1;
 }
+
 //sourceの逆数を返す
 //1...正常終了
 //0...エラー
 int reciprocal(struct FLOAT *source, struct FLOAT *to){
     //ニュートンラフソンをつかう
-    struct FLOAT x, xAfter, temp1, temp2, temp3, oldDist, newDist;
+    struct FLOAT x, xAfter, temp1, temp2, temp3, two, one,oneNear, oldDist, newDist;
     struct NUMBER temp;
     int sourceSign = getSignInt(&source->n);
+    int sourceExp = getExp(source);
     clearByZeroFloat(to);
     if(isZeroFloat(source))
         return 0;
     if(sourceSign == 1){
         //初期値x = 0.2 * 10 ^(-N)
-        setFloat(&x, 2, -(source->exp + 1));
+        clearByZeroFloat(&x);
+        clearByZeroFloat(&one);
+        clearByZeroFloat(&two);
+        setInt(&x.n, 2, 0);
+        setExp(&x, -(sourceExp + 1));
+        setInt(&one.n, 1, 0);
+        setInt(&two.n, 2, 0); 
+        if(!multipleFloat(&x, source, &oneNear))
+            return -1;
         //oldDist = abs(1-x * source)
         if(!(multipleFloat(&x, source, &temp1)))
             return 0;
-        setFloat(&temp2, 1, 0);
-        if(!subFloat(&temp2, &temp1, &temp3))
+        if(!subFloat(&one, &temp1, &temp3))
             return 0;
         getAbsFloat(&temp3, &oldDist);
         //ニュートンラフソン
+
         while(1){
-            setFloat(&temp1, 2, 0);
-            if(!multipleFloat(source, &x, &temp2))
-                return 0;
-            if(!subFloat(&temp1, &temp2, &temp3))
+            if(!subFloat(&two, &oneNear, &temp3))
                 return 0;
             if(!multipleFloat(&temp3, &x, &xAfter))
                 return 0;
 
             //終了条件
             //newDesit=abs(1-x*source)
-            if(!(multipleFloat(&xAfter, source, &temp1)))
+            if(!(multipleFloat(&xAfter, source, &oneNear)))
                 return 0;
-            setFloat(&temp2, 1, 0);
-            if(!subFloat(&temp2, &temp1, &temp3))
+            if(!subFloat(&one, &oneNear, &temp3))
                 return 0;
             getAbsFloat(&temp3, &newDist);
             //差が小さくなっていたら続行
@@ -1160,8 +1174,8 @@ int reciprocal(struct FLOAT *source, struct FLOAT *to){
             copyNumberFloat(&newDist, &oldDist);
         }
         copyNumberFloat(&x, to);
-        divByRadInt(&to->n, &temp);
-        copyNumberInt(&temp, &to->n);
+        //divByRadInt(&to->n, &temp);
+        //copyNumberInt(&temp, &to->n);
         return 1;
     }else if(sourceSign == -1){
         getAbsFloat(source, &temp1);
@@ -1173,6 +1187,7 @@ int reciprocal(struct FLOAT *source, struct FLOAT *to){
     }
     return 0;
 }
+/*
 int numSqrt2(struct FLOAT *source, struct FLOAT *sqroot){
     struct FLOAT x, xAfter, half, three, one, oldDist, newDist,temp1 , temp2, temp3, eps;
     clearByZeroFloat(sqroot);
