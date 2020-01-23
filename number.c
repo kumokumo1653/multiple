@@ -14,7 +14,7 @@ void clearByZeroInt(struct NUMBER *num){
 }
 void clearByZeroFloat(struct FLOAT *num){
     clearByZeroInt(&(num->n));
-    num->exp = 0;
+    setExp(num, 0);
 }
 
 void dispNumberInt(struct NUMBER *num){
@@ -28,7 +28,7 @@ void dispNumberInt(struct NUMBER *num){
 }
 void dispNumberFloat(struct FLOAT *num){
     int i;
-    int exp = num->exp;
+    int exp = getExp(num);
     if(getSignInt(&(num->n)) > 0)
         printf("+");
     else
@@ -70,7 +70,7 @@ void dispNumberFloat(struct FLOAT *num){
 }
 void dispNumberFloatforCopy(struct FLOAT *num){
     int i;
-    int exp = num->exp;
+    int exp = getExp(num);
     if(getSignInt(&(num->n)) < 0)
         printf("-");
     if(exp >= 0){
@@ -116,7 +116,7 @@ void copyNumberInt(struct NUMBER *source, struct NUMBER *to){
 void copyNumberFloat(struct FLOAT *source, struct FLOAT *to){
     clearByZeroFloat(to);
     copyNumberInt(&source->n, &to->n);
-    to->exp = source->exp;
+    setExp(to, getExp(source));
 }
 
 void getAbsInt(struct NUMBER *source,struct NUMBER *to){
@@ -127,8 +127,7 @@ void getAbsInt(struct NUMBER *source,struct NUMBER *to){
 void getAbsFloat(struct FLOAT *source,struct FLOAT *to){
     clearByZeroFloat(to);
     getAbsInt(&source->n, &to->n);
-    to->exp = source->exp;
-
+    setExp(to, getExp(source));
 }
 
 //返り値
@@ -160,7 +159,7 @@ int isZeroInt(struct NUMBER *num){
 //各桁が0であるのに指数部が0でないのとき0ではないと返す
 int isZeroFloat(struct FLOAT *num){
     if(isZeroInt(&num->n)){
-        if(num->exp == 0)
+        if(getExp(num) == 0)
             return 1;
         else
             return 0;
@@ -275,13 +274,13 @@ int setRandomFloat(struct FLOAT *num, int digit, int ex){
     clearByZeroFloat(num);
     if(!setRandomInt(&num->n, digit))
         return 0;
-    num->exp = rand() % ex * (rand() % 2 ? 1 : -1); 
+    setExp(num, rand() % ex * (rand() % 2 ? 1 : -1)); 
 }
 
 //小数点以下の桁数を返す
 int getDigitDecimal(struct FLOAT*num){
     int digit = getDigitInt(&num->n);
-    return digit - 1 - num->exp;
+    return digit - 1 - getExp(num);
 }
 //仮数部の無意味なゼロを省く
 //24000->24
@@ -299,7 +298,7 @@ int clearByZeroDecimal(struct FLOAT *source, struct FLOAT *to){
         divByNInt(&source->n, &to->n, cnt, NULL);
     else
         copyNumberFloat(source, to);
-    to->exp = source->exp;
+    setExp(to, getExp(source));
     return 1;
 }
 void swapInt(struct NUMBER *a,struct NUMBER *b){
@@ -318,6 +317,13 @@ int getDigitInt(struct NUMBER *num){
     if(isZeroInt(num))
         return 1;
     return 0;
+}
+//返り値に指数部
+int getExp(struct FLOAT *num){
+    return num->exp;
+}
+void setExp(struct FLOAT *num, int exp){
+    num->exp = exp;
 }
 
 //1...正常終了0...エラー
@@ -388,8 +394,8 @@ int numCompInt(struct NUMBER *a,struct NUMBER *b){
 //0...a=b
 //-1...a<b
 int numCompFloat(struct FLOAT *a,struct FLOAT *b){
-    int Aexp = a->exp;
-    int Bexp = b->exp;
+    int Aexp = getExp(a);
+    int Bexp = getExp(b);
     int Adigit = getDigitInt(&a->n);
     int Bdigit = getDigitInt(&b->n);
     int i;
@@ -509,15 +515,15 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
 
             if(addInt(&temp1, &temp3, &temp2,&c)){
                 copyNumberInt(&temp2, &ans->n);
-                ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
+                setExp(ans, getExp(augend) >= getExp(addend) ? getExp(augend) : getExp(addend));
                 if(c)
                     ans->exp++;
                 return 1;
             }else{
                 divByRadInt(&temp2, &ans->n);
                 ans->n.n[DIGIT - 1] = 1;
-                ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
-                if(ans->exp >= INT_MAX)
+                setExp(ans, getExp(augend) >= getExp(addend) ? getExp(augend) : getExp(addend));
+                if(getExp(ans) >= INT_MAX)
                     return 0;
                 ans->exp += 1;
                 return 1;
@@ -525,15 +531,15 @@ int addFloat(struct  FLOAT *augend, struct FLOAT *addend, struct FLOAT *ans){
         }else if (augendDigitDecimal == addendDigitDecimal){
             if(addInt(&augend->n, &addend->n,&temp1,&c)){
                 copyNumberInt(&temp1, &ans->n);
-                ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
+                setExp(ans, getExp(augend) >= getExp(addend) ? getExp(augend) : getExp(addend));
                 if(c)
                     ans->exp++;
                 return 1;
             }else{
                 divByRadInt(&temp1, &ans->n);
                 ans->n.n[DIGIT - 1] = 1;
-                ans->exp = (augend->exp >= addend->exp) ? augend->exp : addend->exp;
-                if(ans->exp == INT_MAX)
+                setExp(ans, getExp(augend) >= getExp(addend) ? getExp(augend) : getExp(addend));
+                if(getExp(ans) == INT_MAX)
                     return 0;
                 ans->exp += 1;
                 return 1;
@@ -681,7 +687,7 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
             }
             if(subInt(&temp3, &temp1, &temp2, &b)){
                 copyNumberInt(&temp2, &ans->n);
-                ans->exp = (minuend->exp >= subtrahend->exp) ? minuend->exp : subtrahend->exp;
+                setExp(ans, getExp(minuend) >= getExp(subtrahend) ? getExp(minuend) : getExp(subtrahend));
                 if(b)
                     ans->exp -= b;
                 return 1;
@@ -694,7 +700,7 @@ int subFloat(struct FLOAT *minuend ,struct FLOAT *subtrahend, struct FLOAT *ans)
 
             if(subInt(&minuend->n, &subtrahend->n, &temp2, &b)){
                 copyNumberInt(&temp2, &ans->n);
-                ans->exp = (minuend->exp >= subtrahend->exp) ? minuend->exp : subtrahend->exp;
+                setExp(ans, getExp(minuend) >= getExp(subtrahend) ? getExp(minuend) : getExp(subtrahend));
                 if(b)
                     ans->exp -= b;
                 return 1;
@@ -818,7 +824,7 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     }else if(multiplicandDigit == 1 && multiplierDigit == -1){
         struct NUMBER temp;
         getAbsInt(multiplier,&temp);
-        if(!multipleInt(multiplicand,&temp,ans, NULL)){
+       if(!multipleInt(multiplicand,&temp,ans, NULL)){
             clearByZeroInt(ans);
             return 0;
         }

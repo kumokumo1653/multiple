@@ -32,6 +32,8 @@ int setRandomFloat(struct FLOAT *, int, int);
 int getIntToString(struct NUMBER*,char *);
 int getDigitInt(struct NUMBER*);
 int getDigitDecimal(struct FLOAT*);
+int getExp(struct FLOAT *);
+void setExp(struct FLOAT *, int);
 int clearByZeroDecimal(struct FLOAT*, struct FLOAT *);
 void swapInt(struct NUMBER *, struct NUMBER *);
 int setSignInt(struct NUMBER *,int);
