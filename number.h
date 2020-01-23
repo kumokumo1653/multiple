@@ -1,4 +1,6 @@
-#define DIGIT 10
+#define DIGIT 5
+#define RADIX 1000000000
+#define DISPRAD "        0"
 
 struct NUMBER{
     int n[DIGIT];
@@ -13,22 +15,20 @@ void clearByZeroInt(struct NUMBER *);
 void clearByZeroFloat(struct FLOAT *);
 void dispNumberInt(struct NUMBER *);
 void dispNumberFloat(struct FLOAT *);
-void dispNumberZeroSuppressInt(struct NUMBER *);
 void dispNumberFloatforCopy(struct FLOAT *);
-void setRandomInt(struct NUMBER *,int);
 void copyNumberInt(struct NUMBER *, struct NUMBER *);
 void copyNumberFloat(struct FLOAT *, struct FLOAT *);
 void getAbsInt(struct NUMBER *,struct NUMBER *);
 void getAbsFloat(struct FLOAT *,struct FLOAT *);
 int isZeroInt(struct NUMBER *);
 int isZeroFloat(struct FLOAT *);
-int mulBy10Int(struct NUMBER *,struct NUMBER *);
+int mulByRadInt(struct NUMBER *,struct NUMBER *);
 int mulByNInt(struct NUMBER *,struct NUMBER *, int );
-int divBy10Int(struct NUMBER *,struct NUMBER *);
+int divByRadInt(struct NUMBER *,struct NUMBER *);
 int divByNInt(struct NUMBER *,struct NUMBER *, int, struct NUMBER *);
-int setInt(struct NUMBER *,int);
-int setFloat(struct FLOAT *, int, int);
-int getInt(struct NUMBER *,int *);
+int setInt(struct NUMBER *, int, int);
+int setRandomInt(struct NUMBER * , int);
+int setRandomFloat(struct FLOAT *, int, int);
 int getIntToString(struct NUMBER*,char *);
 int getDigitInt(struct NUMBER*);
 int getDigitDecimal(struct FLOAT*);
@@ -38,7 +38,7 @@ int setSignInt(struct NUMBER *,int);
 int getSignInt(struct NUMBER *);
 int numCompInt(struct NUMBER *,struct NUMBER *);
 int numCompFloat(struct FLOAT *,struct FLOAT *);
-int addInt(struct  NUMBER *, struct NUMBER *, struct NUMBER *,int *);
+int addInt(struct  NUMBER *, struct NUMBER *, struct NUMBER *, int *);
 int addFloat(struct  FLOAT *, struct FLOAT *, struct FLOAT *);
 int subInt(struct NUMBER * ,struct NUMBER *, struct NUMBER *, int *);
 int subFloat(struct FLOAT * ,struct FLOAT *, struct FLOAT *);
