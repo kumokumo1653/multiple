@@ -12,12 +12,12 @@ int main(void){
     int i,j;
     //for(i = 0; i < 10; i++){
         //setFloat(&a , rand() % 100000 * (rand() % 2 ? -1 : 1), rand() % 3 * (rand() % 2 ? 1 : -1) );
-        //setFloat(&b, -rand() % 100000, rand() % 3 * (rand() % 2 ? 1 : -1));
-        setFloat(&a, 3, 0);
-        //setFloat(&b, -2, 0);
+        //setFloat(&b, rand() % 100000, rand() % 3 * (rand() % 2 ? 1 : -1));
+        setFloat(&a, 25065, 0);
+        //setFloat(&b, 23405, -1);
         dispNumberFloat(&a);puts("");
         //dispNumberFloat(&b);puts("");
-        printf("%d\n", numSqrt2(&a, &c));
+        printf("%d\n", numSqrt(&a, &c));
         dispNumberFloat(&c);puts("");
         puts("");
 

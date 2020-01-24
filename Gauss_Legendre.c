@@ -3,7 +3,7 @@
 #include <time.h>
 #include "number.h"
 
-#define CNT 9
+#define CNT 8
 int main(void){
     time_t t1 = time(NULL);
     struct FLOAT a, b, t, p, aAfter, bAfter, tAfter, pAfter, half, two, four, PI, temp1, temp2, temp3;
