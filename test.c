@@ -7,8 +7,7 @@
 #define DIGIT 3000000000
 
 int main(void){
-   int a = 3000000000; 
-   if(INT_MAX < DIGIT)
-      puts("");
+   int a = 3; 
+   printf("%d\n", a / 2);
    return 0;
 }

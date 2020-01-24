@@ -45,6 +45,7 @@ int subFloat(struct FLOAT * ,struct FLOAT *, struct FLOAT *);
 int incrementInt(struct NUMBER *, struct NUMBER *);
 int decrementInt(struct NUMBER *, struct NUMBER *);
 int multipleInt(struct NUMBER *, struct NUMBER *, struct NUMBER *,struct NUMBER *);
+int multipleKarastuba(struct NUMBER *, struct NUMBER *, struct NUMBER *, struct NUMBER *);
 int multipleFloat(struct FLOAT *, struct FLOAT *, struct FLOAT *);
 int divideInt(struct NUMBER *, struct NUMBER *,struct NUMBER *, struct NUMBER *);
 int divideFloat(struct FLOAT *, struct FLOAT *, struct FLOAT *);

@@ -896,6 +896,30 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
     }
     return 0;
 }
+//karastuba法
+//1...正常終了
+//0...エラー
+int multipleKarastuba(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct NUMBER *ans, struct NUMBER *c){
+    struct NUMBER multiplicandUpper, multiplicandLower, multiplierUpper, multiplierLower;
+    int multiplicandDigit = getDigitInt(&multiplicand->n);
+    int multiplierDigit = getDigitInt(&multiplier->n);
+    int diggerDigit = multiplicandDigit >= multiplierDigit ? multiplicandDigit : multiplierDigit;
+    int lessDigit = multiplicandDigit >= multiplierDigit ? multiplierDigit : multiplicandDigit;
+    int splitDigit = diggerDigit / 2 + 1;
+    //multiplicandとmultiplierの桁数が小さい方が大きい方の半分いかなら通常multiple
+    if(diggerDigit / 2 > lessDigit){
+        if(!multipleInt(multiplicand, multiplier, ans, c))
+            return 0;
+        return 1;
+    }
+    //10桁未満なら通常multipleで処理
+    if(diggerDigit < 10){
+        
+        //桁の分割
+        
+    }
+    
+}
 //返り値
 //1...正常終了
 //0...オーバーフロー
