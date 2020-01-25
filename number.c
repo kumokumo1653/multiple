@@ -904,13 +904,14 @@ int multipleInt(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct N
 //1...正常終了
 //0...エラー
 int multipleKarastuba(struct NUMBER *multiplicand, struct NUMBER *multiplier, struct NUMBER *ans, struct NUMBER *c){
-    struct NUMBER multiplicandUpper, multiplicandLower, multiplierUpper, multiplierLower, ansUpper, ansMiddle, ansLower, temp1, temp2, temp3, temp4;
+    struct NUMBER multiplicandUpper, multiplicandMiddle, multiplicandLower, multiplierUpper, multiplierMiddle, multiplierLower, ansUpper, ansMiddle, ansLower, temp1, temp2, temp3, temp4;
     struct NUMBER diffMultiplicand, diffMultiplier, carryUpper, carryMiddle ,carryTemp;
     int multiplicandDigit = getDigitInt(multiplicand);
     int multiplierDigit = getDigitInt(multiplier);
     int diggerDigit = multiplicandDigit >= multiplierDigit ? multiplicandDigit : multiplierDigit;
     int lessDigit = multiplicandDigit >= multiplierDigit ? multiplierDigit : multiplicandDigit;
-    int splitDigit = diggerDigit / 2;
+    int splitLowerDigit = diggerDigit / 3;
+    int splitUpperDigit = (diggerDigit - splitLowerDigit) / 2;
     int i;
     int moveDigit, carry, result;
 
@@ -922,88 +923,23 @@ int multipleKarastuba(struct NUMBER *multiplicand, struct NUMBER *multiplier, st
         else
             return 0;
     }
-    //multiplicandとmultiplierの桁数が小さい方が大きい方の半分いかなら通常multiple
-    if(diggerDigit / 2 > lessDigit){
-        //FLOAT処理
-        result = multipleInt(multiplicand, multiplier,ans, c);
+
+    //小さい桁が大きい方の桁のUpperDigitより小さければ通常multipleに
+    if(lessDigit <= splitLowerDigit + splitUpperDigit){
+        result = multipleInt(multiplicand, multiplier, ans, c);
         if(result)
             return 1;
         else
             return 0;
-
-    }
-    //桁の分割
-    divByNInt(multiplicand,&multiplicandUpper, splitDigit, &multiplicandLower);
-    divByNInt(multiplier, &multiplierUpper, splitDigit, &multiplierLower);
-    //10桁未満なら通常multipleで処理
-    if(diggerDigit < 10){
-
-
-
-        //上位桁
-        multipleInt(&multiplicandUpper, &multiplierLower, &ansUpper,&carryTemp);
-
-        //下位桁
-        multipleInt(&multiplicandLower, &multiplierLower, &ansLower, NULL);
-
-        //中位桁
-        if(!subInt(&multiplicandUpper, &multiplicandLower, &diffMultiplicand, NULL))
-            return 0;
-        if(!subInt(&multiplierUpper, &multiplierLower, &diffMultiplier, NULL))
-            return 0;
-        if(!multipleInt(&diffMultiplicand, &diffMultiplier, &temp1, NULL))
-            return 0;
-        subInt(&ansLower, &temp1, &temp2, NULL);
-        if(!addInt(&ansUpper, &temp2, &ansMiddle, &carry)){
-            incrementInt(&carryTemp, &temp4);
-            copyNumberInt(&temp4, &carryTemp);
-        
-        //桁の統合
-        //上位桁temp1に入れる
-        clearByZeroInt(&temp1);
-        clearByZeroInt(&carryUpper);
-        moveDigit = splitDigit * 2;
-        for(i = 0; i < getDigitInt(&ansUpper); i++){
-            if(i + moveDigit < DIGIT)
-                ansUpper.n[i] = temp1.n[i + moveDigit];
-            else
-                ansUpper.n[i] = carryUpper.n[i + moveDigit - DIGIT];
-        }
-
-        //中位桁temp2に入れる
-        clearByZeroInt(&temp2);
-        clearByZeroInt(&carryMiddle);
-        moveDigit = splitDigit;
-        for(i = 0; i < getDigitInt(&ansMiddle); i++){
-            if(i + moveDigit < DIGIT)
-                ansMiddle.n[i] = temp2.n[i + moveDigit];
-            else
-                ansMiddle.n[i] = carryMiddle.n[i + moveDigit - DIGIT];
-        }
-
-        //足し合わせ
-        //下段
-        addInt(&ansLower, &temp2, &temp3, NULL);
-        addInt(&temp3, &temp1, ans, &carry);
-
-        //上段
-        //オーバーフロー分を調整
-        if(carry)
-            carryMiddle.n[getDigitInt(&carryMiddle)] = 1;
-        
-        //下段の繰り上がりを足す
-        if(carry){
-            incrementInt(&carryMiddle, &temp4);
-            copyNumberInt(&temp4, &carryMiddle);
-        }
-        addInt(&carryMiddle, &carryUpper, c, NULL);
-        return 1;
-        
     }else{
-
-
+        
+        //桁の分割
+        divByNInt(multiplicand, &temp1, splitLowerDigit, &multiplicandLower);
+        divByNInt(multiplier, &temp2, splitLowerDigit, &multiplierLower);
+        divByNInt(&temp1, &multiplicandUpper, splitUpperDigit, &multiplicandMiddle);
+        divByNInt(&temp2, &multiplierUpper, splitUpperDigit, &multiplierMiddle);
+        
     }
-
     
 }
 //返り値
