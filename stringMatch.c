@@ -6,18 +6,17 @@ int main(int argc, char *argv[]){
    int i, flag, digit,cnt;
    cnt = 0;
    flag = 1;
- 
-   if(argc != 3){
-      printf("引数:確認する円周率 理論の円周率");
-      return -1;
-   }
-   if(strlen(argv[1]) > strlen(argv[2])){
+   char a[15000], b[15000];
+   
+   scanf("%s",a);
+   scanf("%s",b);
+   if(strlen(a) > strlen(b)){
       printf("理論値の円周率の桁が少ないです。");
       return -1;
    }
-   digit = strlen(argv[1]);
+   digit = strlen(a);
    for(i = 0; i < digit; i++){
-      if(argv[1][i] != argv[2][i]){
+      if(a[i] != b[i]){
          flag = 0;
          break;
       }

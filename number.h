@@ -1,4 +1,4 @@
-#define DIGIT 1113
+#define DIGIT 111
 #define RADIX 1000000000
 #define DISPRAD "        0"
 

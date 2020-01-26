@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <sys/time.h>
 #include "number.h"
 
-#define CNT 15
+#define CNT 9
+
 int main(void){
-    time_t t1 = time(NULL);
+    struct timeval tv;
+    double tstart, tend;
+    gettimeofday(&tv, NULL);
+    tstart = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
     struct FLOAT a, b, t, p, aAfter, bAfter, tAfter, pAfter, half, two, four, PI, temp1, temp2, temp3;
     int cnt = 0;
     //初期値の設定
@@ -84,7 +88,8 @@ int main(void){
         return -1;
     dispNumberFloatforCopy(&PI);
     puts("");
-    time_t t2 = time(NULL);
-    printf("%ld秒",t2-t1);
+    gettimeofday(&tv, NULL);
+    tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
+    printf("%f秒",tend - tstart);
     return 0;
 }

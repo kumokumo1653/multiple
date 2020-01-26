@@ -441,10 +441,19 @@ int addInt(struct  NUMBER *augend, struct NUMBER *addend, struct NUMBER *ans, in
             }
         }
         if(carry > 0){
-            //printf("overflow\n");
-            if(c != NULL)
-                *c = 1;
-            return 0;
+            if(i == DIGIT){
+                if(c != NULL)
+                    *c = 1;
+                return 0;
+            }else{
+                if(c != NULL){
+                    if(carry)
+                        *c = 1;
+                    else
+                        *c = 0;
+                }
+                ans->n[digit] = 1;
+            }
         }
         return 1;
     }
@@ -583,8 +592,9 @@ int subInt(struct NUMBER *minuend,struct NUMBER *subtrahend, struct NUMBER *ans,
     int borrrow = 0;
     int minuendSign = getSignInt(minuend);
     int subtrahendSign = getSignInt(subtrahend);
+    int digit = getDigitInt(minuend) >= getDigitInt(subtrahend) ? getDigitInt(minuend) : getDigitInt(subtrahend);
     if(b != NULL)
-        *b = getDigitInt(minuend) >= getDigitInt(subtrahend) ? getDigitInt(minuend) : getDigitInt(subtrahend);
+        *b = digit; 
     //ともに正のとき
     if((minuendSign == 1) && (subtrahendSign == 1)){
         //a<bのとき入れ替える
@@ -599,7 +609,7 @@ int subInt(struct NUMBER *minuend,struct NUMBER *subtrahend, struct NUMBER *ans,
             return 1;
         }else{
             clearByZeroInt(ans);
-            for(i = 0;i < DIGIT; i++){
+            for(i = 0;i < digit; i++){
                 //繰り下がり考慮
                 int minuendDigit = minuend->n[i] - borrrow;
                 int subtrahendDigit = subtrahend->n[i];

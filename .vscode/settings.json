@@ -3,6 +3,7 @@
         "type_traits": "cpp",
         "cmath": "cpp",
         "limits": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "utime.h": "c"
     }
 }
