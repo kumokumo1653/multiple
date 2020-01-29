@@ -90,7 +90,7 @@ void dispNumberFloatforCopy(struct FLOAT *num){
             printf(".");
         }
     }else{
-        printf(DISPRAD);
+        printf("0");
         exp++;
         printf("."); 
         while(exp != 0){
@@ -341,11 +341,14 @@ int getIntToString(struct NUMBER *num,char *set){
 
 //1...正に-1...負に
 int setSignInt(struct NUMBER *num,int s){
-    if(s == 1)
+    if(s == 1){
         num->sign = 1;
-    else if(s == -1)
+        return 1;
+    }else if(s == -1){
         num->sign = -1;
-    return 1;
+        return 1;
+    }
+    return 0;
 }
 //正なら1負なら-1を返す。
 int getSignInt(struct NUMBER *num){

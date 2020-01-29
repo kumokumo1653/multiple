@@ -1,6 +1,7 @@
 #define DIGIT 111
-#define RADIX 1000000000
-#define DISPRAD "        0"
+#define RADIX 10
+
+#define DISPRAD "000000000"
 
 struct NUMBER{
     int n[DIGIT];

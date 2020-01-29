@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define DIGIT 3000000000
+#define DIGIT 3
 
 int main(void){
    srand(time(NULL));
    long int a = rand() ;
-   printf("%lld\n", LLONG_MAX);
-   printf("%d\n", INT_MAX);
+   printf("%0DIGId\n", 45);
+   //printf("%d\n", INT_MAX);
    return 0;
 }
