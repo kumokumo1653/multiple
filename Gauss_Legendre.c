@@ -86,7 +86,7 @@ int main(void){
         return -1;
     if(!divideFloat(&temp2, &temp3, &PI))
         return -1;
-    dispNumberFloatforCopy(&PI);
+    dispNumberFloat(&PI);
     puts("");
     gettimeofday(&tv, NULL);
     tend = (double)tv.tv_sec + (double)tv.tv_usec * 1.e-6;
